@@ -1,5 +1,7 @@
 #include "camera.h"
 
+using namespace CraftBlock;
+
 // https://learnopengl.com/Getting-started/Camera
 bool Camera::update() {
     Vec3 up{0.0f, 1.0f, 0.0f};

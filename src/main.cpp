@@ -10,13 +10,13 @@
 #include <shader.h>
 #include <gui.h>
 #include <mesh.h>
-#include <matrix.h>
 #include <object.h>
 #include <renderstate.h>
 #include <texture.h>
-#include <meshtools.h>
 #include <craftblock.h>
 #include <mineblock.h>
+
+using namespace CraftBlock;
 
 void error_callback(int error, const char* description) {
     std::cerr << "Error: " << description << std::endl;
@@ -179,6 +179,12 @@ int main(void) {
     for (int i = 0; i < 7; i++) {
         chunk.PutBlock(5, 5, i, CraftBlock::Log);
     }
+    chunk.PutBlock(8,  8,  1, CraftBlock::Rose);
+    chunk.PutBlock(9,  9,  1, CraftBlock::TallGrass);
+    chunk.PutBlock(10, 11,  1, CraftBlock::Torch);
+    chunk.PutBlock(10, 10, 0, CraftBlock::Water);
+    chunk.PutBlock(11, 10, 0, CraftBlock::Water);
+    chunk.PutBlock(12, 10, 0, CraftBlock::Water);
 
     rs.mvpLocation = rs.currentShader->GetUniformLocation("MVP");
     rs.textureLocation = rs.currentShader->GetUniformLocation("uSampler");

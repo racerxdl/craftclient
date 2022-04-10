@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <map>
+#include <unordered_map>
 
 #include "../block.h"
 #include "builder.h"
@@ -35,6 +35,6 @@ namespace CraftBlock {
     BLOCKSTRUCT(Brick, false)
     BLOCKSTRUCT(Cactus, false)
 
-    extern const std::map<CraftBlock::BlockType, const Block*> BlockByType;
+    extern const std::unordered_map<CraftBlock::BlockType, const Block*> BlockByType;
     BlockFaceTextureNames TexturesToLoad();
 }

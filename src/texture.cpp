@@ -4,6 +4,8 @@
 #include <cassert>
 #include <iostream>
 
+using namespace CraftBlock;
+
 uint64_t next_pow2(uint64_t x) {
 	return x == 1 ? 1 : 1<<(64-__builtin_clzl(x-1));
 }

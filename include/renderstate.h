@@ -2,18 +2,19 @@
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <math/matrix.h>
+#include <math/vectors.h>
 
-#include "matrix.h"
 #include "shader.h"
 #include "camera.h"
 
 struct RenderState {
     GLuint mvpLocation;
     GLuint textureLocation;
-    Mat4 projection;
-    Mat4 viewProjection;
+    CraftBlock::Mat4 projection;
+    CraftBlock::Mat4 viewProjection;
     Camera camera;
-    Vec2 lastMouse;
+    CraftBlock::Vec2 lastMouse;
     bool firstMouse = true;
     bool wireframeMode = false;
     std::shared_ptr<ShaderProgram> currentShader;

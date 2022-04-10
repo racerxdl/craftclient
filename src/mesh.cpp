@@ -1,5 +1,7 @@
 #include "mesh.h"
 
+using namespace CraftBlock;
+
 // returns index of the cached point if exists
 // if not, adds to cache and then returns the index
 int _Mesh::cachePoint(const Vec3 point, const Vec4 color, const Vec2 tex) {

@@ -4,7 +4,7 @@
 using namespace CraftBlock;
 
 namespace CraftBlock {
-    const std::map<CraftBlock::BlockType, const Block*> BlockByType = {
+    const std::unordered_map<CraftBlock::BlockType, const Block*> BlockByType = {
         {   Air, new AirBlock()                  },
         {   Grass, new GrassBlock()              },
         {   Dirt, new DirtBlock()                },
@@ -111,7 +111,9 @@ namespace CraftBlock {
         "textures/blocks/leaves_acacia",        // Top
         "textures/blocks/leaves_acacia",        // Bottom
     };
-    BlockFaceTextureNames CraftBlock::RoseBlock::textureNames = {};
+    BlockFaceTextureNames CraftBlock::RoseBlock::textureNames = {
+        "textures/blocks/flower_rose",
+    };
     BlockFaceTextureNames CraftBlock::ButtercupBlock::textureNames = {};
     BlockFaceTextureNames CraftBlock::CoalBlock::textureNames = {
         "textures/blocks/coal_ore",        // Back
@@ -138,9 +140,37 @@ namespace CraftBlock {
         "textures/blocks/clay",        // Top
         "textures/blocks/clay",        // Bottom
     };
-    BlockFaceTextureNames CraftBlock::GravelBlock::textureNames = {};
-    BlockFaceTextureNames CraftBlock::PlanksBlock::textureNames = {};
-    BlockFaceTextureNames CraftBlock::TorchBlock::textureNames = {};
+    BlockFaceTextureNames CraftBlock::GravelBlock::textureNames = {
+        "textures/blocks/gravel",        // Back
+        "textures/blocks/gravel",        // Front
+        "textures/blocks/gravel",        // Right
+        "textures/blocks/gravel",        // Left
+        "textures/blocks/gravel",        // Top
+        "textures/blocks/gravel",        // Bottom
+    };
+    BlockFaceTextureNames CraftBlock::PlanksBlock::textureNames = {
+        "textures/blocks/planks_oak",        // Back
+        "textures/blocks/planks_oak",        // Front
+        "textures/blocks/planks_oak",        // Right
+        "textures/blocks/planks_oak",        // Left
+        "textures/blocks/planks_oak",        // Top
+        "textures/blocks/planks_oak",        // Bottom
+    };
+    BlockFaceTextureNames CraftBlock::TorchBlock::textureNames = {
+        // "textures/blocks/torch_on",        // Back
+        // "textures/blocks/torch_on",        // Front
+        // "textures/blocks/torch_on",        // Right
+        // "textures/blocks/torch_on",        // Left
+        // "textures/blocks/torch_on",        // Top
+        // "textures/blocks/torch_on",        // Bottom
+
+        "textures/blocks/stone",        // Back
+        "textures/blocks/stone",        // Front
+        "textures/blocks/stone",        // Right
+        "textures/blocks/stone",        // Left
+        "textures/blocks/stone",        // Top
+        "textures/blocks/stone",        // Bottom
+    };
     BlockFaceTextureNames CraftBlock::CobblestoneBlock::textureNames = {
         "textures/blocks/cobblestone",        // Back
         "textures/blocks/cobblestone",        // Front
@@ -149,10 +179,26 @@ namespace CraftBlock {
         "textures/blocks/cobblestone",        // Top
         "textures/blocks/cobblestone",        // Bottom
     };
-    BlockFaceTextureNames CraftBlock::SnowBlock::textureNames = {};
-    BlockFaceTextureNames CraftBlock::PodzolBlock::textureNames = {};
+    BlockFaceTextureNames CraftBlock::SnowBlock::textureNames = {
+        "textures/blocks/snow",        // Back
+        "textures/blocks/snow",        // Front
+        "textures/blocks/snow",        // Right
+        "textures/blocks/snow",        // Left
+        "textures/blocks/snow",        // Top
+        "textures/blocks/snow",        // Bottom
+    };
+    BlockFaceTextureNames CraftBlock::PodzolBlock::textureNames = {
+        "textures/blocks/dirt_podzol_side",       // Back
+        "textures/blocks/dirt_podzol_side",       // Front
+        "textures/blocks/dirt_podzol_side",       // Right
+        "textures/blocks/dirt_podzol_side",       // Left
+        "textures/blocks/dirt_podzol_top",        // Top
+        "textures/blocks/dirt_podzol_side",       // Bottom
+    };
     BlockFaceTextureNames CraftBlock::ShrubBlock::textureNames = {};
-    BlockFaceTextureNames CraftBlock::TallGrassBlock::textureNames = {};
+    BlockFaceTextureNames CraftBlock::TallGrassBlock::textureNames = {
+        "textures/blocks/tallgrass_carried",
+    };
     BlockFaceTextureNames CraftBlock::PineLogBlock::textureNames = {};
     BlockFaceTextureNames CraftBlock::PineLeavesBlock::textureNames = {};
     BlockFaceTextureNames CraftBlock::BrickBlock::textureNames = {

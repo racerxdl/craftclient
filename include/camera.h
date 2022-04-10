@@ -1,15 +1,15 @@
 #pragma once
 
-#include "matrix.h"
+#include <math/matrix.h>
 
 class Camera {
-    Vec3 pos;
-    Vec3 direction;
-    Vec3 right;
-    Vec3 camFront;
-    Mat4 view;
+    CraftBlock::Vec3 pos;
+    CraftBlock::Vec3 direction;
+    CraftBlock::Vec3 right;
+    CraftBlock::Vec3 camFront;
+    CraftBlock::Mat4 view;
     bool needsMatrixUpdate = true;
-    Vec2 pitchYaw;
+    CraftBlock::Vec2 pitchYaw;
 
     template<size_t N>
     struct posgetset {
@@ -42,10 +42,10 @@ class Camera {
     };
 public:
     bool update();
-    Mat4 getMatrix() { return view; }
-    void SetPos(const Vec3 &p) { pos = p; needsMatrixUpdate = true; }
-    Vec3 GetPos() const { return pos; }
-    Vec3 GetCamFront() const { return camFront; }
+    CraftBlock::Mat4 getMatrix() { return view; }
+    void SetPos(const CraftBlock::Vec3 &p) { pos = p; needsMatrixUpdate = true; }
+    CraftBlock::Vec3 GetPos() const { return pos; }
+    CraftBlock::Vec3 GetCamFront() const { return camFront; }
 
     // Magic Fields
     [[no_unique_address]] posgetset<0> x;

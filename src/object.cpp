@@ -1,5 +1,7 @@
 #include "object.h"
 
+using namespace CraftBlock;
+
 void Object::Update() {
     if (needsMatrixUpdate) {
         needsMatrixUpdate = false;
@@ -64,6 +66,13 @@ void Object::Render(const RenderState &rs) {
     }
     Mat4 mvp = rs.viewProjection * m;
     glUniformMatrix4fv(rs.mvpLocation, 1, GL_FALSE, (const GLfloat*) mvp.AsFloatArray());
+    if (faceCulling) {
+        glEnable(GL_CULL_FACE); // cull face
+        glCullFace(GL_BACK);    // cull back face
+        glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
     if (wireframeMode) {
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     }

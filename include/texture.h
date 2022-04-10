@@ -30,12 +30,12 @@ public:
 class _TextureAtlas: public _Texture {
 private:
     std::map<std::string, int> textureIndex;
-    Vec2 sectionSize;
+    CraftBlock::Vec2 sectionSize;
 public:
-    _TextureAtlas(Vec2 sectionSize, std::vector<std::string> files);
-    Vec2 operator[](const std::string &);
-    Vec2 SectionSize() { return Vec2{sectionSize.x / img->width, sectionSize.y / img->height}; };
-    Vec4 GetBounds(const std::string &);
+    _TextureAtlas(CraftBlock::Vec2 sectionSize, std::vector<std::string> files);
+    CraftBlock::Vec2 operator[](const std::string &);
+    CraftBlock::Vec2 SectionSize() { return CraftBlock::Vec2{sectionSize.x / img->width, sectionSize.y / img->height}; };
+    CraftBlock::Vec4 GetBounds(const std::string &);
 };
 
 TextureAtlas BuildTextureAtlasFromFiles(std::vector<std::string> files);

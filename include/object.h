@@ -35,9 +35,9 @@ private:
     };
 protected:
     Mesh mesh;
-    Vec3 pos;
-    Vec3 rot;
-    Mat4 m;
+    CraftBlock::Vec3 pos;
+    CraftBlock::Vec3 rot;
+    CraftBlock::Mat4 m;
     Texture tex;
     TextureAtlas atlas;
     bool needsMatrixUpdate = true;
@@ -54,16 +54,17 @@ public:
     void SetTexture(Texture tex) { this->tex = tex; }
     void SetAtlas(TextureAtlas atlas) { this->tex = atlas; this->atlas = atlas; }
     void Render(const RenderState &);
-    void SetPos(const Vec3 &pos) { needsMatrixUpdate = true; this->pos = pos; }
-    void SetRotation(const Vec3 &rot) { needsMatrixUpdate = true; this->rot = rot; }
+    void SetPos(const CraftBlock::Vec3 &pos) { needsMatrixUpdate = true; this->pos = pos; }
+    void SetRotation(const CraftBlock::Vec3 &rot) { needsMatrixUpdate = true; this->rot = rot; }
     void SetTextureFromAtlas(const std::string &name);
     void SetTextureFromAtlas(int faceN, const std::string &name);
     void SetTextureFromAtlas(const std::vector<std::string> &name);
-    Vec3 GetPos() const { return pos; }
-    Vec3 GetRotation() const { return rot; }
+    CraftBlock::Vec3 GetPos() const { return pos; }
+    CraftBlock::Vec3 GetRotation() const { return rot; }
     Object CloneWithMesh() const;
 
     bool wireframeMode = false;
+    bool faceCulling = true;
 
     // Magic fields
     [[no_unique_address]] posgetset<0> x;
