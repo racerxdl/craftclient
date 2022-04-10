@@ -21,6 +21,14 @@ _Mesh::~_Mesh() {
     }
 }
 
+void _Mesh::SetFaceMap(int faceN, Vec2 map[4]) {
+    needsRecompute = true;
+    assert(faces.size() > faceN);
+    for (int i = 0; i < 4; i++) {
+        faces[faceN].texCoord[i] = map[i];
+    }
+}
+
 void _Mesh::recompute() {
     if (!needsRecompute) {
         return;
@@ -33,16 +41,18 @@ void _Mesh::recompute() {
     // Build cache
     // If the points are repeated, only store once
     for(auto &face: faces) {
-        // Face has 4 points, so we need to generate two triangles
-        // 0 1 3 and 1 2 3
-        // 013
-        cachedIndexes.push_back(cachePoint(face.points[0], face.color[0], face.texCoord[0]));
-        cachedIndexes.push_back(cachePoint(face.points[1], face.color[1], face.texCoord[1]));
-        cachedIndexes.push_back(cachePoint(face.points[3], face.color[3], face.texCoord[3]));
-        // 123
-        cachedIndexes.push_back(cachePoint(face.points[1], face.color[1], face.texCoord[1]));
-        cachedIndexes.push_back(cachePoint(face.points[2], face.color[2], face.texCoord[2]));
-        cachedIndexes.push_back(cachePoint(face.points[3], face.color[3], face.texCoord[3]));
+        if (face.render) {
+            // Face has 4 points, so we need to generate two triangles
+            // 0 1 3 and 1 2 3
+            // 013
+            cachedIndexes.push_back(cachePoint(face.points[0], face.color[0], face.texCoord[0]));
+            cachedIndexes.push_back(cachePoint(face.points[1], face.color[1], face.texCoord[1]));
+            cachedIndexes.push_back(cachePoint(face.points[3], face.color[3], face.texCoord[3]));
+            // 123
+            cachedIndexes.push_back(cachePoint(face.points[1], face.color[1], face.texCoord[1]));
+            cachedIndexes.push_back(cachePoint(face.points[2], face.color[2], face.texCoord[2]));
+            cachedIndexes.push_back(cachePoint(face.points[3], face.color[3], face.texCoord[3]));
+        }
     }
 
     if (!initialized) {

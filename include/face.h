@@ -14,6 +14,7 @@ public:
     Vec3 points[4];
     Vec2 texCoord[4];
     Vec4 color[4];
+    bool render = true;
 
     Face() {}
     Face(const Vec3 points[4], const Vec2 texCoord[4], const Vec4 color[4]) {

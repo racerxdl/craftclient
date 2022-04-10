@@ -2,8 +2,18 @@
 
 #include <png.h>
 
-Image LoadPNG(const std::string &filename) {
+Image LoadPNG(std::string filename) {
     auto img = std::make_shared<_Image>();
+
+    auto idx = filename.find_last_of(".");
+    if (idx == -1) {
+        filename += ".png";
+    } else {
+        auto ext = filename.substr(idx);
+        if (ext.compare(".png") != 0) {
+            throw ImageException("cannot load file " + filename + ": not a png file");
+        }
+    }
 
     FILE *fp = fopen(filename.c_str(), "rb");
     if (!fp) {

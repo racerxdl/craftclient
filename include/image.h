@@ -13,6 +13,8 @@ public:
     int width, height;
     int bpp, colorType;
     Rows rows;
+    Row &operator[](int n) { return rows[n]; }
+    const Row operator[](int n) const { return rows[n]; }
 };
 
 class ImageException: public std::exception {
@@ -26,4 +28,4 @@ public:
 
 typedef std::shared_ptr<_Image> Image;
 
-Image LoadPNG(const std::string &filename);
+Image LoadPNG(std::string filename);

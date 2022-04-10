@@ -12,6 +12,8 @@
 #include <renderstate.h>
 #include <texture.h>
 #include <meshtools.h>
+#include <craftblock.h>
+#include <mineblock.h>
 
 void error_callback(int error, const char* description) {
     std::cerr << "Error: " << description << std::endl;
@@ -32,22 +34,22 @@ void processInput(GLFWwindow* window, RenderState &rs) {
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         rs.camera.SetPos(rs.camera.GetPos() - rs.camera.GetCamFront() * cameraSpeed);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        auto off = rs.camera.GetCamFront().CrossProduct(Vec3{0.0f, 1.0f, 0});
+        auto off = rs.camera.GetCamFront().CrossProduct(Vec3{0.0f, 1.0f, 0.f});
         off.Normalize();
         off = off * cameraSpeed;
         rs.camera.SetPos(rs.camera.GetPos() - off);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        auto off = rs.camera.GetCamFront().CrossProduct(Vec3{0.0f, 1.0f, 0});
+        auto off = rs.camera.GetCamFront().CrossProduct(Vec3{0.0f, 1.0f, 0.f});
         off.Normalize();
         off = off * cameraSpeed;
         rs.camera.SetPos(rs.camera.GetPos() + off);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        rs.camera.SetPos(rs.camera.GetPos() + Vec3{0.0f, 1.0f, 0} * cameraSpeed);
+        rs.camera.SetPos(rs.camera.GetPos() + Vec3{0.0f, 1.0f, 0.f} * cameraSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
-        rs.camera.SetPos(rs.camera.GetPos() - Vec3{0.0f, 1.0f, 0} * cameraSpeed);
+        rs.camera.SetPos(rs.camera.GetPos() - Vec3{0.0f, 1.0f, 0.f} * cameraSpeed);
     }
 }
 
@@ -77,7 +79,6 @@ RenderState rs;
 
 int main(void) {
     GLFWwindow* window;
-
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
@@ -148,22 +149,31 @@ int main(void) {
     rs.currentShader->LoadVertexFile("shaders/vertex.glsl");
     rs.currentShader->CompileShaders();
 
-
     rs.camera = Camera();
     rs.camera.SetPos({0.0f, 1.0f, 8.0f});
     rs.camera.pitch = -12;
     rs.camera.yaw = -80;
 
-    auto faces = GenerateCubeFaces(0.5, Vec3{0.5, 0.5, 0.5});
-    auto texture = LoadTextureFromFile("textures/blocks/brick.png");
-    auto mesh = NewMesh(faces);
-    auto obj = Object(mesh, texture);
-    obj.z = 5;
+    auto faces = GenerateCubeFaces(1, Vec3{0.f, 0.f, 0.f});
+    auto atlas = BuildTextureAtlasFromFiles(CraftBlock::TexturesToLoad());
 
-    auto obj2 = obj;
-    obj2.x = -1;
-    // obj2.roll = 30 * M_PI / 180;
-    obj2.pitch = 45 * M_PI / 180;
+    auto chunk = ChunkObject(atlas);
+
+    for (int x = 0; x < 16; x++) {
+        for (int z = 0; z < 16; z++) {
+            chunk.PutBlock(x, z, 0, CraftBlock::Grass);
+            chunk.PutBlock(x, z, -64, CraftBlock::Grass);
+            if (z > 4 && z < 8 && x > 4 && x < 8) {
+                chunk.PutBlock(x, z, 4, CraftBlock::Grass);
+            }
+        }
+    }
+
+    chunk.PutBlock(10, 10, 3, CraftBlock::Stone);
+
+    for (int i = 0; i < 7; i++) {
+        chunk.PutBlock(5, 5, i, CraftBlock::Log);
+    }
 
     rs.mvpLocation = rs.currentShader->GetUniformLocation("MVP");
     rs.textureLocation = rs.currentShader->GetUniformLocation("uSampler");
@@ -180,8 +190,8 @@ int main(void) {
     while (!glfwWindowShouldClose(window)) {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE); // cull face
-        glCullFace(GL_BACK); // cull back face
-        glFrontFace(GL_CCW); // GL_CCW for counter clock-wise
+        glCullFace(GL_BACK);    // cull back face
+        glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
         glViewport(0, 0, width, height);
         glClearColor(0.2f, 0.25f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -190,26 +200,17 @@ int main(void) {
             rs.viewProjection = rs.projection *  rs.camera.getMatrix();
         }
 
-        // obj.roll = 30 * M_PI / 180;
-        // obj.pitch = 30 * M_PI / 180;
-        // obj.yaw = (float)glfwGetTime();
-
         rs.currentShader->Use();
 
-        if (rs.wireframeMode) {
-            glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ); // WIRE FRAME MODE
-        }
-        obj.Render(rs);
-        obj2.Render(rs);
-        if (rs.wireframeMode) {
-            glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ); // WIRE FRAME MODE
-        }
+        chunk.Update();
+        chunk.Render(rs);
 
         gui->Render(rs);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
         processInput(window, rs);
+        chunk.wireframeMode = rs.wireframeMode;
     }
 
     glfwDestroyWindow(window);

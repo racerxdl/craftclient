@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 #set(CMAKE_CXX_FLAGS "-fPIC -O2")
 #set(CMAKE_C_FLAGS "-fPIC -O2")
+set(BUILD_SHARED_LIBS ON)
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 set (CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 set(CMAKE_BUILD_TYPE Debug)
@@ -30,6 +31,9 @@ conan_cmake_install(PATH_OR_REFERENCE .
 
 # Find source files
 file(GLOB SOURCES src/*.cpp)
+# set(SOURCES ${SOURCES} ${CRAFTBLOCK_SOURCES})
+
+
 # set(SOURCES
 #     src/glad.cpp
 #     src/gui.cpp
@@ -48,18 +52,21 @@ find_package(PNG)
 
 # Dependencies
 
+add_subdirectory(libs/craftblock)
+
 set(NANOGUI_BUILD_EXAMPLE OFF CACHE BOOL " " FORCE)
 set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
 set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
 
-#find_package(glfw3)
 add_subdirectory(libs/nanogui)
-set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
 add_definitions(${NANOGUI_EXTRA_DEFS})
 include_directories(${NANOGUI_EXTRA_INCS})
 
+set_property(TARGET glfw glfw_objects nanogui CraftBlock PROPERTY FOLDER "dependencies")
+
 # Include header files
 include_directories(include)
+include_directories(libs/craftblock/include)
 include_directories(libs/linmath/include)
 include_directories(libs/glad/include)
 include_directories(libs/nanogui/include)
@@ -72,6 +79,7 @@ target_link_libraries(${PROJECT_NAME} glfw)
 target_link_libraries(${PROJECT_NAME} nanogui)
 target_link_libraries(${PROJECT_NAME} PNG::PNG)
 target_link_libraries(${PROJECT_NAME} ${NANOGUI_EXTRA_LIBS})
+target_link_libraries(${PROJECT_NAME} CraftBlock)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0)
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION_MAJOR 1)

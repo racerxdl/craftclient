@@ -15,8 +15,24 @@ private:
         operator float() {
             return ((float *)this)[P];
         }
-        float operator = (float other) {
+        float operator =(float other) {
             return (((float *)this)[P] = other);
+        }
+        float operator +=(float other) {
+            float v = ((float *)this)[P] + other;
+            return (((float *)this)[P] = v);
+        }
+        float operator -=(float other) {
+            float v = ((float *)this)[P] - other;
+            return (((float *)this)[P] = v);
+        }
+        float operator *=(float other) {
+            float v = ((float *)this)[P] * other;
+            return (((float *)this)[P] = v);
+        }
+        float operator /=(float other) {
+            float v = ((float *)this)[P] / other;
+            return (((float *)this)[P] = v);
         }
     };
 
@@ -69,6 +85,7 @@ public:
         }
         return r;
     }
+    BaseVec<N> CrossProduct(const BaseVec<N> &) const;
 
     BaseVec<N> Normalize() const {
         float s = 1.f / Length();
@@ -83,18 +100,19 @@ public:
 
     void operator+=(const BaseVec<N> &v1) {
         for(int i = 0; i < N; i++) {
-            this->v[i] += v1[i];
+            this->memory[i] += v1[i];
         }
     }
 
     void operator-=(const BaseVec<N> &v1) {
         for(int i = 0; i < N; i++) {
-            this->v[i] -= v1[i];
+            this->memory[i] -= v1[i];
         }
     }
 
-    BaseVec<N> CrossProduct(const BaseVec<N> &) const;
+    BaseVec<N> operator*(const BaseMat<N> m) const;
 
+    // Friend Operators
     friend BaseVec<N> operator+(const BaseVec<N>& v0, const BaseVec<N>& v1) {
         BaseVec<N> vo;
         for (int i = 0; i < N; i++) {
@@ -143,8 +161,6 @@ public:
     friend bool operator!= (const BaseVec<N>& v0, const BaseVec<N>& v1) {
         return !(v0 == v1);
     }
-
-    BaseVec<N> operator*(const BaseMat<N> m) const;
 };
 
 template<size_t N> std::ostream& operator<< (std::ostream& stream, const BaseVec<N>& v);

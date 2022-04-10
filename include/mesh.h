@@ -21,7 +21,6 @@ struct Vertex {
 
 class _Mesh: public Renderable {
 private:
-    FaceList faces;
     bool needsRecompute;
     std::vector<Vec3> cachedPoints;
     std::vector<unsigned int> cachedIndexes;
@@ -40,8 +39,16 @@ public:
     _Mesh() {}
     ~_Mesh();
     _Mesh(const FaceList &faces): faces(faces), needsRecompute(true) {};
+    void SetShowFace(int faceN, bool show) { needsRecompute = faces[faceN].render != show; faces[faceN].render = show; }
+    void HideFace(int faceN) { SetShowFace(faceN, false); }
+    void ShowFace(int faceN) { SetShowFace(faceN, true); }
+    void SetFaceMap(int faceN, Vec2 map[4]);
+    int NumFaces() const { return faces.size(); }
+    void invalidate() { needsRecompute = true; }
     void recompute();
     void Render(const RenderState &);
+
+    FaceList faces;
 };
 
 typedef std::shared_ptr<_Mesh> Mesh;
