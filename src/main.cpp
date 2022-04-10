@@ -4,6 +4,9 @@
 #include <linmath.h>
 #include <nanogui/nanogui.h>
 #include <iostream>
+#include <chrono>
+
+
 #include <shader.h>
 #include <gui.h>
 #include <mesh.h>
@@ -170,6 +173,8 @@ int main(void) {
     }
 
     chunk.PutBlock(10, 10, 3, CraftBlock::Stone);
+    chunk.PutBlock(10, 11, 3, CraftBlock::Stone);
+    chunk.PutBlock(10, 12, 3, CraftBlock::Stone);
 
     for (int i = 0; i < 7; i++) {
         chunk.PutBlock(5, 5, i, CraftBlock::Log);
@@ -187,11 +192,19 @@ int main(void) {
     rs.projection = OrthoProjection(-ratio, ratio, -1.f, 1.f, 1.f, 100.f);
     rs.projection = PerspectiveProjection((80*M_PI)/180, ratio,  0.1f, 100.f);
 
+    auto lastFrame = std::chrono::system_clock::now();
+    auto ss = std::stringstream();
     while (!glfwWindowShouldClose(window)) {
+        auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastFrame);
+        if (delta.count() != 0) {
+            auto fps = 1000 / delta.count();
+            ss.str("");
+            ss << "CraftClient: " << fps << " FPS - " << delta.count() << "ms";
+            glfwSetWindowTitle(window, ss.str().c_str());
+        }
+        lastFrame = std::chrono::system_clock::now();
+
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE); // cull face
-        glCullFace(GL_BACK);    // cull back face
-        glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
         glViewport(0, 0, width, height);
         glClearColor(0.2f, 0.25f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
