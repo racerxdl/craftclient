@@ -10,14 +10,12 @@ namespace CraftBlock {
     const Vec2 emptyTexCoord[4];
     const Vec3 emptyPoints[4];
 
-    class Face {
-    public:
+    struct Face {
         Vec3 points[4];
         Vec2 texCoord[4];
         Vec4 color[4];
         bool render = true;
 
-        Face() {}
         Face(const Vec3 points[4], const Vec2 texCoord[4], const Vec4 color[4]) {
             for (int i = 0; i < 4; i++) {
                 this->points[i] = points[i];
@@ -28,6 +26,8 @@ namespace CraftBlock {
         Face(const Vec3 points[4], const Vec2 texCoord[4]) : Face(points, texCoord, emptyColors) {}
         Face(const Vec3 points[4], const Vec4 color[4]) : Face(points, emptyTexCoord, color) {}
         Face(const Vec3 points[4]) : Face(points, emptyTexCoord, emptyColors) {}
+        Face(const Face &f) : Face(f.points, f.texCoord, f.color) {}
+        Face() {}
     };
 
     typedef std::vector<Face> FaceList;

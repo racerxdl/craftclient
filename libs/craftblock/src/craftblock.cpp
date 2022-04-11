@@ -12,3 +12,7 @@ using namespace CraftBlock;
 std::string CraftBlock::CraftBlockVersion() {
     return std::string(TOSTRING(CRAFTBLOCK_VERSION));
 }
+
+void CraftBlock::initialize() {
+    CraftBlock::initializeGeometries();
+}

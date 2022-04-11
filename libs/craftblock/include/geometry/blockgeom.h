@@ -9,6 +9,6 @@ namespace CraftBlock {
     struct BlockGeometry {
         FaceList faces;
     };
-
+    void initializeGeometries();
     extern std::unordered_map<BlockType, BlockGeometry> BlockGeometries;
 }

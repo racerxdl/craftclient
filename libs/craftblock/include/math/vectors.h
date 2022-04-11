@@ -65,8 +65,9 @@ namespace CraftBlock {
 
         constexpr size_t size() { return N; }
 
-        BaseVec<N>() { for (int i = 0; i < N; i++) { memory[i] = 0.f; }}
         BaseVec<N>(std::initializer_list<float> vals) { for (int i = 0; i < N; i++) { memory[i] = vals.begin()[i]; }}
+        BaseVec<N>(const BaseVec<N> &o) { for (int i = 0; i < N; i++) { memory[i] = o[i]; }}
+        BaseVec<N>() { for (int i = 0; i < N; i++) { memory[i] = 0.f; }}
 
         const float *AsFloatArray() const { return &memory[0]; }
         float *AsFloatArray() { return &memory[0]; }
@@ -91,6 +92,12 @@ namespace CraftBlock {
         BaseVec<N> Normalize() const {
             float s = 1.f / Length();
             return (*this) * s;
+        }
+
+        void Scale(BaseVec<N> s) {
+            for (int i = 0; i < N; i++) {
+                this->memory[i] *= s[i];
+            }
         }
 
         void operator=(const BaseVec<N>& v1) {
@@ -142,6 +149,14 @@ namespace CraftBlock {
             BaseVec<N> vo;
             for (int i = 0; i < N; i++) {
                 vo[i] = v0[i] / s;
+            }
+            return vo;
+        }
+
+        friend BaseVec<N> operator/(const float s, const BaseVec<N>& v0) {
+            BaseVec<N> vo;
+            for (int i = 0; i < N; i++) {
+                vo[i] = s / v0[i];
             }
             return vo;
         }

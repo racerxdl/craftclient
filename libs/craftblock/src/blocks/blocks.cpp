@@ -157,19 +157,19 @@ namespace CraftBlock {
         "textures/blocks/planks_oak",        // Bottom
     };
     BlockFaceTextureNames CraftBlock::TorchBlock::textureNames = {
-        // "textures/blocks/torch_on",        // Back
-        // "textures/blocks/torch_on",        // Front
-        // "textures/blocks/torch_on",        // Right
-        // "textures/blocks/torch_on",        // Left
-        // "textures/blocks/torch_on",        // Top
-        // "textures/blocks/torch_on",        // Bottom
+        "textures/blocks/torch_on",        // Back
+        "textures/blocks/torch_on",        // Front
+        "textures/blocks/torch_on",        // Right
+        "textures/blocks/torch_on",        // Left
+        "textures/blocks/torch_on",        // Top
+        "textures/blocks/torch_on",        // Bottom
 
-        "textures/blocks/stone",        // Back
-        "textures/blocks/stone",        // Front
-        "textures/blocks/stone",        // Right
-        "textures/blocks/stone",        // Left
-        "textures/blocks/stone",        // Top
-        "textures/blocks/stone",        // Bottom
+        // "textures/blocks/stone",        // Back
+        // "textures/blocks/stone",        // Front
+        // "textures/blocks/stone",        // Right
+        // "textures/blocks/stone",        // Left
+        // "textures/blocks/stone",        // Top
+        // "textures/blocks/stone",        // Bottom
     };
     BlockFaceTextureNames CraftBlock::CobblestoneBlock::textureNames = {
         "textures/blocks/cobblestone",        // Back

@@ -6,7 +6,6 @@
 #include <iostream>
 #include <chrono>
 
-
 #include <shader.h>
 #include <gui.h>
 #include <mesh.h>
@@ -73,14 +72,15 @@ void updateMouse(double xpos, double ypos, RenderState &rs) {
 
     rs.camera.yaw   += xoffset;
     rs.camera.pitch += yoffset;
-    if(rs.camera.pitch > 89.0f) rs.camera.pitch =  89.0f;
-    if(rs.camera.pitch < -89.0f) rs.camera.pitch = -89.0f;
+    if(rs.camera.pitch > 50.0f) rs.camera.pitch =  50.0f;
+    if(rs.camera.pitch < -50.0f) rs.camera.pitch = -50.0f;
 }
 
 GUI *gui = nullptr;
 RenderState rs;
 
 int main(void) {
+    CraftBlock::initialize();
     GLFWwindow* window;
     glfwSetErrorCallback(error_callback);
 
@@ -182,6 +182,7 @@ int main(void) {
     chunk.PutBlock(8,  8,  1, CraftBlock::Rose);
     chunk.PutBlock(9,  9,  1, CraftBlock::TallGrass);
     chunk.PutBlock(10, 11,  1, CraftBlock::Torch);
+    chunk.PutBlock(10, 11, 2, CraftBlock::Stone);
     chunk.PutBlock(10, 10, 0, CraftBlock::Water);
     chunk.PutBlock(11, 10, 0, CraftBlock::Water);
     chunk.PutBlock(12, 10, 0, CraftBlock::Water);

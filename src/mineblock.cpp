@@ -43,13 +43,14 @@ void ChunkObject::Update() {
                         // Move block to the right position and pre-fill texture coordinates
                         for (int i = 0; i < faces.size(); i++) {
                             auto texName = (textures.size() == 1) ? textures[0] : textures[i];
-                            auto bounds = atlas->GetBounds(texName);
+                            auto texOrigin = atlas->operator[](texName);
+                            auto texSize = atlas->SectionSize();
 
                             // Texture
-                            faces[i].texCoord[3] = Vec2{bounds.x, bounds.y};
-                            faces[i].texCoord[0] = Vec2{bounds.x, bounds.w};
-                            faces[i].texCoord[1] = Vec2{bounds.z, bounds.w};
-                            faces[i].texCoord[2] = Vec2{bounds.z, bounds.y};
+                            for (int k = 0; k < 4; k++) {
+                                faces[i].texCoord[k].Scale(texSize);
+                                faces[i].texCoord[k] += texOrigin;
+                            }
 
                             // Coordinate
                             for (int t = 0; t < 4; t++) {

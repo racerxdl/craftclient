@@ -11,4 +11,5 @@
 
 namespace CraftBlock {
     std::string CraftBlockVersion();
+    void initialize();
 }
