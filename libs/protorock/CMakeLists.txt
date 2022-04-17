@@ -8,6 +8,8 @@ set(ProtoRock_VERSION_MINOR 0)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+# set(CMAKE_CXX_FLAGS "-fPIC -O2")
 #set(CMAKE_CXX_FLAGS "-fPIC -O2")
 #set(CMAKE_C_FLAGS "-fPIC -O2")
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
@@ -16,10 +18,11 @@ set(CMAKE_BUILD_TYPE Debug)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_definitions("-std=c++17")
 
 include(conan.cmake)
 
-conan_cmake_configure(REQUIRES jwt-cpp/0.6.0 picojson/1.3.0 cppserver/1.0.1.0 openssl/1.1.1m
+conan_cmake_configure(REQUIRES cpr/1.8.1 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 cppserver/1.0.1.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
                       GENERATORS cmake_find_package)
 
 conan_cmake_autodetect(settings)
@@ -36,23 +39,28 @@ file(GLOB_RECURSE HEADERS include/*.h)
 find_package(picojson)
 find_package(jwt-cpp)
 find_package(cppserver)
+find_package(fmt)
+find_package(jsoncpp)
+find_package(date)
+find_package(cpr)
 
 # Find source files
-file(GLOB SOURCES src/*.cpp src/raknet/*.cpp)
+file(GLOB SOURCES src/*.cpp src/common/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
 file(GLOB TEST_SRC testprog/*.cpp)
 
 # Include header files
-include_directories(include include/raknet )
+include_directories(include include/common include/oauth2 include/raknet include/protocol)
 include_directories(${picojson_INCLUDE_DIRS})
-include_directories(${jwt-cpp_INCLUDE_DIRS})
-include_directories(${asio_INCLUDE_DIRS})
-include_directories(${cppcommon_INCLUDE_DIRS})
-include_directories(${cppserver_INCLUDE_DIRS})
+include_directories(${date_INCLUDE_DIRS})
+# include_directories(${jwt-cpp_INCLUDE_DIRS})
+# include_directories(${asio_INCLUDE_DIRS})
+# include_directories(${cppcommon_INCLUDE_DIRS})
+# include_directories(${cppserver_INCLUDE_DIRS})
 
 add_definitions(${jwt-cpp_DEFINITIONS})
 add_definitions(${cppserver_DEFINITIONS})
 
-set(LINKED_LIBS jwt-cpp::jwt-cpp cppserver::cppserver)
+set(LINKED_LIBS jwt-cpp::jwt-cpp cppserver::cppserver jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 add_executable(${PROJECT_NAME}_test ${HEADERS} ${SOURCES} ${TEST_SRC})

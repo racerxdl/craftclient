@@ -2,10 +2,11 @@
 
 #include <unordered_map>
 
-#include "common.h"
+#include "common/common.h"
 #include "packet.h"
 
 namespace ProtoRock {
+using namespace ProtoRock::Common;
 struct recoveryQueue {
     std::unordered_map<uint24_t, Packet> queue;
     std::unordered_map<uint24_t, Time> timestamps;

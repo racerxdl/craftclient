@@ -4,9 +4,11 @@
 #include <memory>
 #include <string>
 
-#include "common.h"
+#include "common/common.h"
 
 namespace ProtoRock {
+
+using namespace ProtoRock::Common;
 
 // Based / Ported from https://github.com/Sandertv/go-raknet/blob/master/packet.go
 

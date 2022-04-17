@@ -1,6 +1,7 @@
-#include "raknet/common.h"
+#include "common/common.h"
 
 namespace ProtoRock {
+namespace Common {
 
 uint24_t PacketBuff::ReadUint24() {
     auto a = (uint24_t)Read();
@@ -188,7 +189,7 @@ asio::ip::udp::endpoint PacketBuff::ReadAddress() {
         auto port = ReadI16BE();
         e = asio::ip::udp::endpoint(asio::ip::address_v4(ipbytes), port);
     } else {
-        ReadI16BE(); // Discard
+        ReadI16BE();  // Discard
         auto port = ReadI16BE();
         asio::detail::array<unsigned char, 16> ipbytes;
         for (int i = 0; i < 16; i++) {
@@ -221,7 +222,7 @@ void PacketBuff::Write(const asio::ip::udp::endpoint &a) {
             memset(ipbytes.data(), 0, 16);
             port = 0;
         }
-        WriteLE((uint16_t)23); // AF_INET6 on Windows
+        WriteLE((uint16_t)23);  // AF_INET6 on Windows
         WriteBE((uint16_t)port);
         WriteBE((uint32_t)0);
         for (int i = 0; i < 16; i++) {
@@ -231,4 +232,5 @@ void PacketBuff::Write(const asio::ip::udp::endpoint &a) {
     }
 }
 
+}  // namespace Common
 }  // namespace ProtoRock

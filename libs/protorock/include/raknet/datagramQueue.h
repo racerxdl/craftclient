@@ -2,9 +2,10 @@
 
 #include <unordered_map>
 
-#include "common.h"
+#include "common/common.h"
 
 namespace ProtoRock {
+using namespace ProtoRock::Common;
 struct datagramQueue {
     uint24_t lowest = 0, highest = 0;
     std::unordered_map<uint24_t, uint24_t> data;
