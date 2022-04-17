@@ -1,7 +1,9 @@
-#include <raknet/raknet.h>
+#include <common/crypto.h>
+#include <jwt-cpp/jwt.h>
 #include <oauth2/live.h>
 #include <oauth2/xbl.h>
-#include <common/crypto.h>
+#include <raknet/raknet.h>
+#include <minecraft/login.h>
 
 #include <iostream>
 #include <thread>
@@ -10,10 +12,24 @@ using namespace std::literals;
 using namespace ProtoRock;
 
 int main() {
-    auto kp = ProtoRock::Crypto::generateES256KeyPair();
-    auto pub = kp.PKIXPublicKey();
+    auto kp = ProtoRock::Crypto::generateES384KeyPair();
+    std::cout << kp.PublicToPEM() << std::endl;
+    std::cout << kp.PrivateToPEM() << std::endl;
 
-    std::cout << Base64::Encode(pub) << std::endl;
+    std::ifstream fi;
+    fi.open("rawData.txt");
+    auto ss = std::ostringstream();
+    ss << fi.rdbuf();
+    fi.close();
+
+    Protocol::ClientData clientData;
+    auto encodedLogin = ProtoRock::Login::Encode(ss.str(),clientData, kp);
+    auto parsedLogin = ProtoRock::Login::Parse(encodedLogin);
+
+
+
+    return -1;
+    auto pub = kp.PKIXPublicKey();
 
     auto service = std::make_shared<CppServer::Asio::Service>();
 
@@ -22,6 +38,7 @@ int main() {
     bool gotToken = false;
     try {
         tkn = OAuth2::Token::LoadFromFile("livetoken.json");
+        OAuth2::RefreshToken(tkn);
         gotToken = true;
     } catch (Exception &e) {
         std::cout << e.msg << ". Getting new token..." << std::endl;
@@ -34,7 +51,7 @@ int main() {
             if (ProtoRock::OAuth2::PollDeviceAuth(d.DeviceCode, tkn)) {
                 break;
             }
-            std::this_thread::sleep_for (1s);
+            std::this_thread::sleep_for(1s);
         }
         std::cout << "Got live token!" << std::endl;
         tkn.Save("livetoken.json");
@@ -64,7 +81,7 @@ int main() {
 
     std::cout << "DONE!" << std::endl;
 
-    return -1;
+    // return -1;
 
     auto raknet = std::make_shared<RaknetClient>(service, 1492);
     try {
@@ -102,7 +119,7 @@ int main() {
                 ss << (unsigned char)p[i];
             }
             std::cout << "Received packet: " << ss.str() << std::endl;
-        } catch(RaknetException &e) {
+        } catch (RaknetException &e) {
             std::cerr << "RaknetException receiving packet: " << e.msg << std::endl;
         }
         CppCommon::Thread::Yield();

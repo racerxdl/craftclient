@@ -45,11 +45,11 @@ find_package(date)
 find_package(cpr)
 
 # Find source files
-file(GLOB SOURCES src/*.cpp src/common/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
+file(GLOB SOURCES src/*.cpp src/common/*.cpp src/minecraft/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
 file(GLOB TEST_SRC testprog/*.cpp)
 
 # Include header files
-include_directories(include include/common include/oauth2 include/raknet include/protocol)
+include_directories(include include/common include/oauth2 include/raknet include/protocol include/minecraft)
 include_directories(${picojson_INCLUDE_DIRS})
 include_directories(${date_INCLUDE_DIRS})
 # include_directories(${jwt-cpp_INCLUDE_DIRS})

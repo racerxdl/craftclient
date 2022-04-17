@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "common/json.h"
 #include "protocol/error.h"
 
 namespace ProtoRock {
@@ -11,7 +12,7 @@ namespace Protocol {
 
 // IdentityData contains identity data of the player logged in. It is found in one of the JWT claims signed
 // by Mojang, and can thus be trusted.
-struct IdentityData {
+struct IdentityData : public Common::JsonSerializable {
     // XUID is the XBOX Live user ID of the player, which will remain consistent as long as the player is
     // logged in with the XBOX Live account. It is empty if the user is not logged into its XBL account.
     std::string XUID;
@@ -31,7 +32,23 @@ struct IdentityData {
 
     IdentityData();
     Error Validate();
-    void Clear() { XUID = ""; TitleId = ""; }
+    void Clear() {
+        XUID = "";
+        TitleId = "";
+    }
+
+    void Serialize(Json::Value &root) const override {
+        root["XUID"] = XUID;
+        root["identity"] = Identity;
+        root["displayName"] = DisplayName;
+        root["titleId"] = TitleId;
+    }
+    void Deserialize(Json::Value &root) override {
+        XUID = root.get("XUID", "").asString();
+        Identity = root.get("identity", "").asString();
+        DisplayName = root.get("displayName", "").asString();
+        TitleId = root.get("titleId", "").asString();
+    }
 };
 }  // namespace Protocol
 }  // namespace ProtoRock

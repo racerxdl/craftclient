@@ -19,7 +19,7 @@ struct DeviceAuthConnect : public JsonSerializable {
     int Interval;
     int ExpiresIn;
 
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         root["user_code"] = UserCode;
         root["device_code"] = DeviceCode;
         root["verification_uri"] = VerificationURI;
@@ -43,7 +43,7 @@ struct DeviceAuthPoll : public Token {
     std::string Error;
     std::string UserId;
 
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         Token::Serialize(root);
         root["error"] = Error;
         root["user_id"] = UserId;

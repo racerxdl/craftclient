@@ -48,8 +48,8 @@ inline std::vector<uint8_t> Decode(const std::string &in) {
     int p = 0;
     for (auto c : in) {
         if (CharMap[c] == -1) {
-            throw std::invalid_argument(fmt::format("invalid base64 char '{}' at position {}", c, p));
-        };
+            break;
+        }
         p++;
         val = (val << 6) + CharMap[c];
         valb += 6;

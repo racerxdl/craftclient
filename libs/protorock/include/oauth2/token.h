@@ -40,7 +40,7 @@ struct Token : public JsonSerializable {
     int ExpiresIn;
     std::string Scope;
 
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         root["access_token"] = AccessToken;
         if (TokenType.size() > 0) root["token_type"] = TokenType;
         if (RefreshToken.size() > 0) root["refresh_token"] = RefreshToken;

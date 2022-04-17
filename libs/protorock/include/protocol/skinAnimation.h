@@ -1,13 +1,14 @@
 #pragma once
 
 #include <string>
+#include <common/json.h>
 
 // See https://github.com/Sandertv/gophertunnel/blob/master/minecraft/protocol/login/data.go#L232
 namespace ProtoRock {
 namespace Protocol {
 // SkinAnimation is an animation that may be present. It is applied on top of the skin default and is cycled
 // through client-side.
-struct SkinAnimation {
+struct SkinAnimation: public Common::JsonSerializable {
     // Frames is the amount of frames of the animation. The number of Frames here specifies how many
     // frames may be found in the Image data.
     double Frames;
@@ -31,6 +32,23 @@ struct SkinAnimation {
     // 0 -> Linear.
     // 1 -> Blinking.
     int AnimationExpression;
+
+    void Serialize(Json::Value &root) const override {
+        root["Frames"] = Frames;
+        root["Image"] = Image;
+        root["ImageHeight"] = ImageHeight;
+        root["ImageWidth"] = ImageWidth;
+        root["Type"] = Type;
+        root["AnimationExpression"] = AnimationExpression;
+    }
+    void Deserialize(Json::Value &root) override {
+        Frames = root.get("Frames", 0).asFloat();
+        Image = root.get("Image", "").asString();
+        ImageHeight = root.get("ImageHeight", 0).asInt();
+        ImageWidth = root.get("ImageWidth", 0).asInt();
+        Type = root.get("Type", 0).asInt();
+        AnimationExpression = root.get("AnimationExpression", 0).asInt();
+    }
 };
 }  // namespace Protocol
 }  // namespace ProtoRock

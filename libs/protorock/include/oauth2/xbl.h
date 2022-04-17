@@ -17,7 +17,7 @@ struct UserInfo : public JsonSerializable {
     std::string XUID;
     std::string UserHash;
 
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         root["gtg"] = GamerTag;
         root["xid"] = XUID;
         root["uhs"] = UserHash;
@@ -34,10 +34,10 @@ struct UserInfo : public JsonSerializable {
 };
 struct DisplayClaims : public JsonSerializable {
     std::vector<UserInfo> userInfo;
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         int i = 0;
         for(auto &ui: userInfo) {
-            ui.Deserialize(root["xui"][i]);
+            ui.Serialize(root["xui"][i]);
             i++;
         }
     }
@@ -59,7 +59,7 @@ struct SubToken : public JsonSerializable {
     std::string IssueInstant;
     std::string NotAfter;
 
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         claims.Serialize(root["DisplayClaims"]);
         root["IssueInstant"] = IssueInstant;
         root["NotAfter"] = NotAfter;
@@ -85,7 +85,7 @@ struct XBLToken : public JsonSerializable {
     SubToken titleToken;
     SubToken userToken;
 
-    void Serialize(Json::Value &root) override {
+    void Serialize(Json::Value &root) const override {
         authorizationToken.Serialize(root["AuthorizationToken"]);
         titleToken.Serialize(root["TitleToken"]);
         userToken.Serialize(root["UserToken"]);

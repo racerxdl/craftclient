@@ -11,7 +11,7 @@
 using namespace ProtoRock::Crypto;
 using namespace ProtoRock::Common;
 
-#define KEY_ALGO NID_X9_62_prime256v1
+#define KEY_ALGO NID_secp384r1
 
 std::mutex sslMtx;  // OpenSSL is not thread-safe
 
@@ -30,6 +30,10 @@ EC_KEY *LoadPublicKey(const ByteBuffer &b) {
     BIO_write(privateBIO, b.data(), b.size());
     ec_key = PEM_read_bio_EC_PUBKEY(privateBIO, nullptr, nullptr, nullptr);
     BIO_free(privateBIO);
+    if (ec_key == nullptr) { // try d2i
+        auto buff = b.data();
+        ec_key = d2i_EC_PUBKEY(nullptr, &buff, b.size());
+    }
     return ec_key;
 }
 
@@ -67,7 +71,7 @@ ByteBuffer sha256(const ByteBuffer &data) {
     return result;
 }
 
-KeyPair ProtoRock::Crypto::generateES256KeyPair() {
+KeyPair ProtoRock::Crypto::generateES384KeyPair() {
     std::lock_guard<std::mutex> lock(sslMtx);
 
     EC_KEY *ec_key = EC_KEY_new_by_curve_name(KEY_ALGO);
@@ -83,15 +87,7 @@ KeyPair ProtoRock::Crypto::generateES256KeyPair() {
     return pair;
 }
 
-KeyPair::KeyPair(Common::ByteBuffer publicKey, Common::ByteBuffer privateKey) {
-    this->privateKey = privateKey;
-    this->publicKey = publicKey;
-
-    if (privateKey.empty()) {
-        ecKey = LoadPublicKey(publicKey);
-    } else {
-        ecKey = LoadPrivateKey(privateKey);
-    }
+void KeyPair::fill() {
     auto point = EC_KEY_get0_public_key(ecKey);
     auto group = EC_KEY_get0_group(ecKey);
     auto bnx = BN_new();
@@ -106,6 +102,36 @@ KeyPair::KeyPair(Common::ByteBuffer publicKey, Common::ByteBuffer privateKey) {
 
     BN_free(bnx);
     BN_free(bny);
+}
+void KeyPair::loadFromBuffers(Common::ByteBuffer publicKey, Common::ByteBuffer privateKey) {
+    this->privateKey = privateKey;
+    this->publicKey = publicKey;
+
+    if (privateKey.empty()) {
+        ecKey = LoadPublicKey(publicKey);
+    } else {
+        ecKey = LoadPrivateKey(privateKey);
+    }
+    if (!ecKey) {
+        throw Exception("cannot read key from data");
+    }
+    fill();
+}
+
+KeyPair::KeyPair(const std::string &x509publicKey) {
+    BIO *privateBIO = BIO_new(BIO_s_mem());
+    BIO_write(privateBIO, x509publicKey.data(), x509publicKey.size());
+
+    ecKey = PEM_read_bio_EC_PUBKEY(privateBIO, nullptr, nullptr, nullptr);
+    if (!ecKey) {
+        throw Exception("cannot read public key from x509 data");
+    }
+    BIO_free(privateBIO);
+    fill();
+}
+
+KeyPair::KeyPair(Common::ByteBuffer publicKey, Common::ByteBuffer privateKey) {
+    loadFromBuffers(publicKey, privateKey);
 }
 
 KeyPair::~KeyPair() {
@@ -157,20 +183,36 @@ bool KeyPair::Verify(const ByteBuffer &data, const ByteBuffer &signature) const 
 }
 
 ByteBuffer KeyPair::PKIXPublicKey() const {
-    auto c = X509_new();
-    auto k = EVP_PKEY_new();
-
-    EVP_PKEY_set1_EC_KEY(k, ecKey);
-    X509_set_pubkey(c, k);
-
-    int keyLen = i2d_X509(c, nullptr);
     ByteBuffer b;
-    b.resize(keyLen);
-    unsigned char *p = (unsigned char *)b.data();
-    i2d_X509(c, &p);
-
-    EVP_PKEY_free(k);
-    X509_free(c);
+    b.resize(i2d_EC_PUBKEY(ecKey, nullptr));
+    auto buff = b.data();
+    i2d_EC_PUBKEY(ecKey, &buff);
 
     return b;
+}
+
+std::string KeyPair::PublicToPEM() const {
+    BIO *bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_EC_PUBKEY(bio, ecKey);
+
+    int keyLen = BIO_pending(bio);
+    ByteBuffer b;
+    b.resize(keyLen);
+    BIO_read(bio, b.data(), keyLen);
+    BIO_free(bio);
+
+    return std::string(b.begin(), b.end());
+}
+
+std::string KeyPair::PrivateToPEM() const {
+    BIO *bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_ECPrivateKey(bio, ecKey, nullptr, nullptr, 0, nullptr, nullptr);
+
+    int keyLen = BIO_pending(bio);
+    ByteBuffer b;
+    b.resize(keyLen);
+    BIO_read(bio, b.data(), keyLen);
+    BIO_free(bio);
+
+    return std::string(b.begin(), b.end());
 }
