@@ -46,12 +46,13 @@ class PacketBuff : public std::deque<uint8_t> {
     PacketBuff(const ByteBuffer &b) : std::deque<uint8_t>(b.begin(), b.end()) {}
     PacketBuff(const char *buff, int size) {
         for (int i = 0; i < size; i++) {
-            Write(buff[i]);
+            Write((uint8_t)buff[i]);
         }
     }
     // Read Operations
     uint8_t Read();
     ByteBuffer ReadBytes(int);
+    void ReadBytes(ByteBuffer &, int);
     uint16_t ReadU16BE();
     uint32_t ReadU32BE();
     uint64_t ReadU64BE();
@@ -59,6 +60,7 @@ class PacketBuff : public std::deque<uint8_t> {
     int32_t ReadI32BE() { return (int32_t)ReadU32BE(); }
     int64_t ReadI64BE() { return (int64_t)ReadU16BE(); }
     uint24_t ReadUint24();
+    float ReadFloat();
 
     uint16_t ReadU16LE();
     uint32_t ReadU32LE();
@@ -74,6 +76,7 @@ class PacketBuff : public std::deque<uint8_t> {
     void Write(const PacketBuff &b) { insert(end(), b.begin(), b.end()); }
     void Write(const ByteBuffer &b) { insert(end(), b.begin(), b.end()); }
     void Write(const asio::ip::udp::endpoint &a);
+    void WriteFloat(float f);
     void WriteBE(uint16_t v);
     void WriteBE(uint32_t v);
     void WriteBE(uint64_t v);

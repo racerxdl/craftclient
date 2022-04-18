@@ -6,9 +6,9 @@ set(ProtoRock_VERSION_MAJOR 1)
 set(ProtoRock_VERSION_MINOR 0)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+# set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 # set(CMAKE_CXX_FLAGS "-fPIC -O2")
 #set(CMAKE_CXX_FLAGS "-fPIC -O2")
 #set(CMAKE_C_FLAGS "-fPIC -O2")
@@ -18,7 +18,7 @@ set(CMAKE_BUILD_TYPE Debug)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_definitions("-std=c++17")
+#add_definitions("-std=c++17")
 
 include(conan.cmake)
 
@@ -45,17 +45,20 @@ find_package(date)
 find_package(cpr)
 
 # Find source files
-file(GLOB SOURCES src/*.cpp src/common/*.cpp src/minecraft/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
+file(GLOB SOURCES src/*.cpp src/common/*.cpp src/minecraft/packet/*.cpp src/minecraft/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
 file(GLOB TEST_SRC testprog/*.cpp)
 
 # Include header files
-include_directories(include include/common include/oauth2 include/raknet include/protocol include/minecraft)
+include_directories(include)
+include_directories(include/common)
+include_directories(include/oauth2)
+include_directories(include/raknet)
+include_directories(include/protocol)
+include_directories(include/minecraft)
+include_directories(../craftblock/include)
 include_directories(${picojson_INCLUDE_DIRS})
 include_directories(${date_INCLUDE_DIRS})
-# include_directories(${jwt-cpp_INCLUDE_DIRS})
-# include_directories(${asio_INCLUDE_DIRS})
-# include_directories(${cppcommon_INCLUDE_DIRS})
-# include_directories(${cppserver_INCLUDE_DIRS})
+
 
 add_definitions(${jwt-cpp_DEFINITIONS})
 add_definitions(${cppserver_DEFINITIONS})

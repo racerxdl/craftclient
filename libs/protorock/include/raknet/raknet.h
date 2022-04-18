@@ -22,7 +22,7 @@ inline Time defaultDeadline() {
     return std::chrono::system_clock::now() + 60s;
 }
 
-class RaknetClient {
+class RaknetClient : public std::enable_shared_from_this<RaknetClient> {
    private:
    protected:
     std::atomic<bool> stop;
@@ -35,6 +35,7 @@ class RaknetClient {
     void onDisconnected();
     void onReceived(const asio::ip::udp::endpoint& endpoint, const void* buffer, size_t size);
     void onError(int error, const std::string& category, const std::string& message);
+    std::shared_ptr<RaknetClient> getRaknetClient() { return shared_from_this(); }
 
    public:
     RaknetClient(std::shared_ptr<CppServer::Asio::Service> service, int16_t mtuSize);

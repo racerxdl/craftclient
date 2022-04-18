@@ -20,6 +20,20 @@ uint8_t PacketBuff::Read() {
     return v;
 }
 
+void PacketBuff::ReadBytes(ByteBuffer &b, int n) {
+    if (n > b.size()) {
+        throw PacketBuffException("no enough space in target buffer");
+    }
+    if (n > size()) {
+        throw PacketBuffException("no enough bytes");
+    }
+
+    for (int i = 0; i < n; i++) {
+        b[i] = *(begin()+i);
+    }
+    erase(begin(), begin()+n);
+}
+
 ByteBuffer PacketBuff::ReadBytes(int n) {
     auto start = begin();
     if (n > size()) {
@@ -230,6 +244,24 @@ void PacketBuff::Write(const asio::ip::udp::endpoint &a) {
         }
         WriteBE((uint32_t)0);
     }
+}
+
+void PacketBuff::WriteFloat(float f) {
+    auto b = (char *)&f;
+    Write(b[0]);
+    Write(b[1]);
+    Write(b[2]);
+    Write(b[3]);
+}
+
+float PacketBuff::ReadFloat() {
+    float f;
+    auto b = (char *)&f;
+    b[0] = Read();
+    b[1] = Read();
+    b[2] = Read();
+    b[3] = Read();
+    return f;
 }
 
 }  // namespace Common
