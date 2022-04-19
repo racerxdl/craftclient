@@ -2,8 +2,8 @@
 #version 330 core
 
 out vec4 FragColor;
-varying vec4 color;
-varying vec2 texCoord;
+in vec4 color;
+in vec2 texCoord;
 uniform sampler2D uSampler;
 
 void main() {

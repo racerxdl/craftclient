@@ -3,10 +3,13 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name
 project(Craftlient CXX)
 
+
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 20)
+cmake_policy(SET CMP0067 NEW)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-#set(CMAKE_CXX_FLAGS "-fPIC -O2")
+set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+# set(CMAKE_CXX_FLAGS "-fPIC -std=c++11") # -O2
 #set(CMAKE_C_FLAGS "-fPIC -O2")
 set(BUILD_SHARED_LIBS ON)
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
@@ -15,7 +18,6 @@ set(CMAKE_BUILD_TYPE Debug)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_definitions("-std=c++11") # Conan
 
 include(conan.cmake)
 
@@ -33,19 +35,6 @@ conan_cmake_install(PATH_OR_REFERENCE .
 file(GLOB SOURCES src/*.cpp)
 # set(SOURCES ${SOURCES} ${CRAFTBLOCK_SOURCES})
 
-
-# set(SOURCES
-#     src/glad.cpp
-#     src/gui.cpp
-#     src/main.cpp
-#     src/matrix.cpp
-#     src/mesh.cpp
-#     src/object.cpp
-#     src/shader.cpp
-#     src/texture.cpp
-#     src/vectors.cpp
-#     src/image.cpp
-# )
 
 find_package(PkgConfig REQUIRED)
 find_package(PNG)

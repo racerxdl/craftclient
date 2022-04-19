@@ -18,6 +18,7 @@ struct RenderState {
     bool firstMouse = true;
     bool wireframeMode = false;
     std::shared_ptr<ShaderProgram> currentShader;
+    float fps;
 };
 
 class Renderable {

@@ -6,8 +6,8 @@ layout (location = 2) in vec2 uvCoord;
 
 uniform mat4 MVP;
 uniform mat4 VP;
-varying vec4 color;
-varying vec2 texCoord;
+out vec4 color;
+out vec2 texCoord;
 
 void main() {
     gl_Position = MVP * vec4(aPos, 1.0);

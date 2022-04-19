@@ -17,7 +17,9 @@ private:
     nanogui::TextBox *textBoxZ;
     nanogui::TextBox *textBoxPitch;
     nanogui::TextBox *textBoxYaw;
+    nanogui::TextBox *textBoxFps;
     float x,y,z,pitch,yaw;
+    float fps;
 
     bool needUpdate = true;
 

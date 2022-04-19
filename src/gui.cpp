@@ -12,11 +12,13 @@ GUI::GUI(GLFWwindow *window) {
     textBoxZ = new nanogui::TextBox(nanoguiWindow, "0.0");
     textBoxPitch = new nanogui::TextBox(nanoguiWindow, "0.0");
     textBoxYaw = new nanogui::TextBox(nanoguiWindow, "0.0");
+    textBoxFps = new nanogui::TextBox(nanoguiWindow, "0.0");
     gui->addWidget("X", textBoxX);
     gui->addWidget("Y", textBoxY);
     gui->addWidget("Z", textBoxZ);
     gui->addWidget("Pitch", textBoxPitch);
     gui->addWidget("Yaw", textBoxYaw);
+    gui->addWidget("FPS", textBoxFps);
     needUpdate = true;
     screen->setVisible(true);
     screen->performLayout();
@@ -38,6 +40,9 @@ void GUI::update() {
         s.str("");
         s << yaw;
         textBoxYaw->setValue(s.str());
+        s.str("");
+        s << fps;
+        textBoxFps->setValue(s.str());
         s.str("");
 
         screen->performLayout();
@@ -64,6 +69,10 @@ void GUI::Render(const RenderState &rs) {
     if (yaw != rs.camera.yaw) {
         needUpdate = true;
         yaw = rs.camera.yaw;
+    }
+    if (fps != rs.fps) {
+        needUpdate = true;
+        fps = rs.fps;
     }
     update();
 

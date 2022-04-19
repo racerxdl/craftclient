@@ -183,9 +183,50 @@ int main(void) {
     chunk.PutBlock(9,  9,  1, CraftBlock::TallGrass);
     chunk.PutBlock(10, 11,  1, CraftBlock::Torch);
     chunk.PutBlock(10, 11, 2, CraftBlock::Stone);
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 6; j++) {
+            for (int z = 0; z < 6; z++) {
+                if ( z <= j && z <= i) {
+                    chunk.PutBlock(i, j, z, CraftBlock::Coal);
+                }
+                if ( z <= j && z <= i) {
+                    chunk.PutBlock(11-i, 11-j, z, CraftBlock::Planks);
+                }
+                if ( z <= j && z <= i) {
+                    chunk.PutBlock(11-i, j, z, CraftBlock::Grass);
+                }
+                if ( z <= j && z <= i) {
+                    chunk.PutBlock(i, 11-j, z, CraftBlock::Brick);
+                }
+            }
+        }
+    }
     chunk.PutBlock(10, 10, 0, CraftBlock::Water);
     chunk.PutBlock(11, 10, 0, CraftBlock::Water);
     chunk.PutBlock(12, 10, 0, CraftBlock::Water);
+    chunk.PutBlock(10, 11, 0, CraftBlock::Lava);
+    chunk.PutBlock(11, 11, 0, CraftBlock::Lava);
+    chunk.PutBlock(12, 11, 0, CraftBlock::Lava);
+    chunk.PutBlock(11, 11, 1, CraftBlock::TallGrass);
+
+    auto chunkList = std::vector<std::shared_ptr<ChunkObject>>();
+
+    auto chunksToRender = 12;
+
+    for (int i = 0; i < chunksToRender; i++) {
+        for (int j = 0; j < chunksToRender; j++) {
+                auto c = std::make_shared<ChunkObject>(atlas);
+                c->SetPos(Vec3{(float)16*i, (float)0, (float)16*j});
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        c->PutBlock(x, z, 0, CraftBlock::Grass);
+                        c->PutBlock(x, z, -64, CraftBlock::Grass);
+                    }
+                }
+                chunkList.push_back(c);
+        }
+    }
+
 
     rs.mvpLocation = rs.currentShader->GetUniformLocation("MVP");
     rs.textureLocation = rs.currentShader->GetUniformLocation("uSampler");
@@ -205,6 +246,7 @@ int main(void) {
         auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastFrame);
         if (delta.count() != 0) {
             auto fps = 1000 / delta.count();
+            rs.fps = fps;
             ss.str("");
             ss << "CraftClient: " << fps << " FPS - " << delta.count() << "ms";
             glfwSetWindowTitle(window, ss.str().c_str());
@@ -221,9 +263,14 @@ int main(void) {
         }
 
         rs.currentShader->Use();
-
+        // chunk.faceCulling = true;
         chunk.Update();
         chunk.Render(rs);
+        for (auto &c: chunkList) {
+            c->wireframeMode = rs.wireframeMode;
+            c->Update();
+            c->Render(rs);
+        }
 
         gui->Render(rs);
 

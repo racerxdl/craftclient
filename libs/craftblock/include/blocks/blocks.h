@@ -20,7 +20,7 @@ namespace CraftBlock {
     BLOCKSTRUCT(Buttercup, false)
     BLOCKSTRUCT(Coal, false)
     BLOCKSTRUCT(Copper, false)
-    BLOCKSTRUCT(Lava, false)
+    BLOCKSTRUCT(Lava, true)
     BLOCKSTRUCT(Clay, false)
     BLOCKSTRUCT(Gravel, false)
     BLOCKSTRUCT(Planks, false)
