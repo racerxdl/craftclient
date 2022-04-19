@@ -165,7 +165,8 @@ XBLToken obtainXBLToken(const KeyPair &keyPair, const Token &liveToken, const st
     return XBLToken(r.text);
 }
 
-XBLToken ProtoRock::OAuth2::RequestXBLToken(const KeyPair &keyPair, const Token &liveToken, const std::string &relyingParty) {
+XBLToken ProtoRock::OAuth2::RequestXBLToken(const Token &liveToken, const std::string &relyingParty) {
+    auto keyPair = Crypto::generateP256KeyPair();
     auto deviceToken = ObtainDeviceToken(keyPair);
     return obtainXBLToken(keyPair, liveToken, deviceToken, relyingParty);
 }

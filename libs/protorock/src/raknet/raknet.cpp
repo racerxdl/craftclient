@@ -6,6 +6,8 @@
 
 #include "message.h"
 #include "objectpool.h"
+#include "protocol/packet/reader.h"
+#include "protocol/packet/writer.h"
 
 using namespace ProtoRock;
 using namespace std::literals;

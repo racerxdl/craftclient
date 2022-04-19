@@ -11,8 +11,6 @@
 using namespace ProtoRock::Crypto;
 using namespace ProtoRock::Common;
 
-#define KEY_ALGO NID_secp384r1
-
 std::mutex sslMtx;  // OpenSSL is not thread-safe
 
 EC_KEY *LoadPrivateKey(const ByteBuffer &b) {
@@ -30,7 +28,7 @@ EC_KEY *LoadPublicKey(const ByteBuffer &b) {
     BIO_write(privateBIO, b.data(), b.size());
     ec_key = PEM_read_bio_EC_PUBKEY(privateBIO, nullptr, nullptr, nullptr);
     BIO_free(privateBIO);
-    if (ec_key == nullptr) { // try d2i
+    if (ec_key == nullptr) {  // try d2i
         auto buff = b.data();
         ec_key = d2i_EC_PUBKEY(nullptr, &buff, b.size());
     }
@@ -70,11 +68,25 @@ ByteBuffer sha256(const ByteBuffer &data) {
     SHA256_Final(result.data(), &hasher);
     return result;
 }
-
-KeyPair ProtoRock::Crypto::generateES384KeyPair() {
+KeyPair ProtoRock::Crypto::generateP256KeyPair() {
     std::lock_guard<std::mutex> lock(sslMtx);
 
-    EC_KEY *ec_key = EC_KEY_new_by_curve_name(KEY_ALGO);
+    EC_KEY *ec_key = EC_KEY_new_by_curve_name(NID_secp256k1);
+
+    if (!EC_KEY_generate_key(ec_key)) {
+        EC_KEY_free(ec_key);
+        throw Exception("cannot generate key");
+    }
+    auto pair = KeyPair(
+        publicKeyToBytes(ec_key),
+        privateKeyToBytes(ec_key));
+    EC_KEY_free(ec_key);
+    return pair;
+}
+KeyPair ProtoRock::Crypto::generateP384KeyPair() {
+    std::lock_guard<std::mutex> lock(sslMtx);
+
+    EC_KEY *ec_key = EC_KEY_new_by_curve_name(NID_secp384r1);
 
     if (!EC_KEY_generate_key(ec_key)) {
         EC_KEY_free(ec_key);
@@ -116,6 +128,10 @@ void KeyPair::loadFromBuffers(Common::ByteBuffer publicKey, Common::ByteBuffer p
         throw Exception("cannot read key from data");
     }
     fill();
+}
+
+KeyPair::KeyPair(const KeyPair &k) {
+    loadFromBuffers(k.publicKey, k.privateKey);
 }
 
 KeyPair::KeyPair(const std::string &x509publicKey) {
@@ -164,8 +180,8 @@ bool KeyPair::Verify(const ByteBuffer &data, const ByteBuffer &signature) const 
     if (ecKey == nullptr) {
         throw Exception("cannot verify: public key not loaded");
     }
-    auto rr = ByteBuffer(signature.begin(), signature.begin()+32);
-    auto rs = ByteBuffer(signature.begin()+32, signature.end());
+    auto rr = ByteBuffer(signature.begin(), signature.begin() + 32);
+    auto rs = ByteBuffer(signature.begin() + 32, signature.end());
     auto r = BN_bin2bn(rr.data(), rr.size(), nullptr);
     auto s = BN_bin2bn(rs.data(), rs.size(), nullptr);
     auto hash = sha256(data);
@@ -215,4 +231,44 @@ std::string KeyPair::PrivateToPEM() const {
     BIO_free(bio);
 
     return std::string(b.begin(), b.end());
+}
+
+Minecrypt::Minecrypt(const Common::ByteBuffer &keyBytes) {
+    this->keyBytes = keyBytes;
+    ByteBuffer iv;
+    iv.reserve(16);
+    iv.insert(iv.end(), keyBytes.begin(), keyBytes.begin() + 12);
+    iv.push_back(0);
+    iv.push_back(0);
+    iv.push_back(0);
+    iv.push_back(2);
+    AES_init_ctx_iv(&ctx, keyBytes.data(), iv.data());
+    sendCounter = 0;
+    counterBuff.resize(8);
+    hashBuff.resize(32);
+}
+void Minecrypt::Encrypt(Common::ByteBuffer &buffer) {
+    // Counter as Little Endian
+    counterBuff[0] = ((uint8_t) (sendCounter >> 0 & 0xFF));
+    counterBuff[1] = ((uint8_t) (sendCounter >> 8 & 0xFF));
+    counterBuff[2] = ((uint8_t) (sendCounter >> 16 & 0xFF));
+    counterBuff[3] = ((uint8_t) (sendCounter >> 24 & 0xFF));
+    counterBuff[4] = ((uint8_t) (sendCounter >> 32 & 0xFF));
+    counterBuff[5] = ((uint8_t) (sendCounter >> 40 & 0xFF));
+    counterBuff[6] = ((uint8_t) (sendCounter >> 48 & 0xFF));
+    counterBuff[7] = ((uint8_t) (sendCounter >> 56 & 0xFF));
+
+    SHA256_CTX hasher;
+    SHA256_Init(&hasher);
+    SHA256_Update(&hasher,  counterBuff.data(), 8);
+    SHA256_Update(&hasher, buffer.data() + 1, buffer.size()-1);
+    SHA256_Update(&hasher, keyBytes.data(), keyBytes.size());
+    SHA256_Final(hashBuff.data(), &hasher);
+
+    buffer.insert(buffer.end(), hashBuff.begin(), hashBuff.end());
+
+    AES_CTR_xcrypt_buffer(&ctx, buffer.data()+1, buffer.size()-1);
+}
+void Minecrypt::Decrypt(Common::ByteBuffer &buffer) {
+    AES_CTR_xcrypt_buffer(&ctx, buffer.data(), buffer.size());
 }

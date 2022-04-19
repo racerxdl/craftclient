@@ -128,7 +128,7 @@ struct XBLToken : public JsonSerializable {
     }
 };
 
-XBLToken RequestXBLToken(const Crypto::KeyPair &keyPair, const Token &liveToken, const std::string &relyingParty);
+XBLToken RequestXBLToken(const Token &liveToken, const std::string &relyingParty);
 std::string RequestMinecraftChain(const Crypto::KeyPair &keyPair, const XBLToken &tkn);
 }  // namespace OAuth2
 }  // namespace ProtoRock

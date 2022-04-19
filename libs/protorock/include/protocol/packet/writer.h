@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math/vectors.h>
+
 #include <cstdint>
 
 #include "common/common.h"
@@ -15,6 +16,7 @@ class Writer {
     std::shared_ptr<Common::PacketBuff> buff;
 
    public:
+    Writer(std::shared_ptr<Common::PacketBuff> buff) : buff(buff) {}
     void SetShieldId(int32_t shieldId) { this->shieldId = shieldId; }
     void WriteFloat(const float v) { buff->WriteFloat(v); }
     void Write(const uint8_t v) { buff->Write(v); }
@@ -76,6 +78,21 @@ class Writer {
         }
         buff->Write((uint8_t)(ux & 0x7F));
     }
+
+    // Primitives
+    void WriteBE(const int16_t v) { buff->WriteBE(v); }
+    void WriteBE(const int32_t v) { buff->WriteBE(v); }
+    void WriteBE(const int64_t v) { buff->WriteBE(v); }
+    void WriteBE(const uint16_t v) { buff->WriteBE(v); }
+    void WriteBE(const uint32_t v) { buff->WriteBE(v); }
+    void WriteBE(const uint64_t v) { buff->WriteBE(v); }
+
+    void WriteLE(const int16_t v) { buff->WriteLE(v); }
+    void WriteLE(const int32_t v) { buff->WriteLE(v); }
+    void WriteLE(const int64_t v) { buff->WriteLE(v); }
+    void WriteLE(const uint16_t v) { buff->WriteLE(v); }
+    void WriteLE(const uint32_t v) { buff->WriteLE(v); }
+    void WriteLE(const uint64_t v) { buff->WriteLE(v); }
 };
 
 }  // namespace Packet

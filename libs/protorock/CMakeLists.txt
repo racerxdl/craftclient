@@ -24,7 +24,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(conan.cmake)
 
-conan_cmake_configure(REQUIRES asio/1.22.1 cpr/1.8.1 libuuid/1.0.3 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
+conan_cmake_configure(REQUIRES asio/1.22.1 cpr/1.8.1 tiny-aes-c/1.0.0 libdeflate/1.10 libuuid/1.0.3 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
                       GENERATORS cmake_find_package)
 
 conan_cmake_autodetect(settings)
@@ -46,6 +46,8 @@ find_package(fmt)
 find_package(jsoncpp)
 find_package(date)
 find_package(cpr)
+find_package(libdeflate)
+find_package(tiny-aes-c)
 
 # Find source files
 file(GLOB SOURCES src/*.cpp src/common/*.cpp src/minecraft/packet/*.cpp src/minecraft/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
@@ -65,7 +67,7 @@ include_directories(${libuuid_INCLUDE_DIRS})
 
 add_definitions(${jwt-cpp_DEFINITIONS})
 
-set(LINKED_LIBS asio::asio libuuid::libuuid jwt-cpp::jwt-cpp jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
+set(LINKED_LIBS asio::asio libuuid::libuuid tiny-aes-c::tiny-aes-c libdeflate::libdeflate jwt-cpp::jwt-cpp jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 add_executable(${PROJECT_NAME}_test ${HEADERS} ${SOURCES} ${TEST_SRC})

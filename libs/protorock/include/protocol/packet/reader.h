@@ -16,6 +16,7 @@ class Reader {
     std::shared_ptr<Common::PacketBuff> buff;
 
    public:
+    Reader(std::shared_ptr<Common::PacketBuff> buff) : buff(buff) {}
     void Read(uint8_t &v) { v = buff->Read(); }
     void Read(int8_t &v) { v = (uint8_t)buff->Read(); }
     void Read(bool &v) { v = buff->Read() ? true : false; }
@@ -81,6 +82,21 @@ class Reader {
         }
         throw Common::Exception("varint overflow");
     }
+
+    void ReadBE(int16_t &v) { v = buff->ReadI16BE(); }
+    void ReadBE(int32_t &v) { v = buff->ReadI32BE(); }
+    void ReadBE(int64_t &v) { v = buff->ReadI64BE(); }
+    void ReadBE(uint16_t &v) { v = buff->ReadU16BE(); }
+    void ReadBE(uint32_t &v) { v = buff->ReadU32BE(); }
+    void ReadBE(uint64_t &v) { v = buff->ReadU64BE(); }
+
+    void ReadLE(int16_t &v) { v = buff->ReadI16LE(); }
+    void ReadLE(int32_t &v) { v = buff->ReadI32LE(); }
+    void ReadLE(int64_t &v) { v = buff->ReadI64LE(); }
+    void ReadLE(uint16_t &v) { v = buff->ReadU16LE(); }
+    void ReadLE(uint32_t &v) { v = buff->ReadU32LE(); }
+    void ReadLE(uint64_t &v) { v = buff->ReadU64LE(); }
+
 };
 }  // namespace Packet
 }  // namespace Protocol

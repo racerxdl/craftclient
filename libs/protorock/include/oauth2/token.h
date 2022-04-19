@@ -55,11 +55,12 @@ struct Token : public JsonSerializable {
         AccessToken = root.get("access_token", "").asString();
         RefreshToken = root.get("refresh_token", "").asString();
         TokenType = root.get("token_type", "").asString();
-        int expiresIn = root.get("expires_in", 0).asInt();
-        if (expiresIn != 0) {
-            Expiry = Now() + std::chrono::seconds(expiresIn);
+        Scope = root.get("scope", "").asString();
+        std::cout << root.get("expires_in", 0).asString() << std::endl;
+        ExpiresIn = root.get("expires_in",-1).asInt();
+        if (ExpiresIn != 0 && ExpiresIn != -1) {
+            Expiry = Now() + std::chrono::seconds(ExpiresIn);
         }
-        root["expires_in"] = expiresIn;
     }
 
     Token() {}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <openssl/ec.h>
+#include <aes.hpp>
 
 #include "common/base64.h"
 #include "common/common.h"
@@ -18,7 +19,7 @@ struct KeyPair {
     Common::ByteBuffer publicKey;
     Common::ByteBuffer privateKey;
 
-    KeyPair() {}
+    KeyPair(const KeyPair &k);
     KeyPair(const std::string &x509publicKey);
     KeyPair(Common::ByteBuffer publicKey, Common::ByteBuffer privateKey);
     KeyPair(Common::ByteBuffer publicKey) : KeyPair(publicKey, Common::ByteBuffer()) {}
@@ -34,6 +35,21 @@ struct KeyPair {
     std::string PrivateToPEM() const;
 };
 
-KeyPair generateES384KeyPair();
+KeyPair generateP384KeyPair();
+KeyPair generateP256KeyPair();
+
+class Minecrypt {
+private:
+    Common::ByteBuffer keyBytes;
+    Common::ByteBuffer counterBuff;
+    Common::ByteBuffer hashBuff;
+    AES_ctx ctx;
+    uint64_t sendCounter;
+public:
+    Minecrypt(const Common::ByteBuffer &keyBytes);
+    void Encrypt(Common::ByteBuffer &buffer);
+    void Decrypt(Common::ByteBuffer &buffer);
+};
+
 }  // namespace Crypto
 }  // namespace ProtoRock

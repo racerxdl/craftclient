@@ -20,6 +20,7 @@ typedef std::vector<std::string> StringList;
 // 24 bit unsigned int. It's actually a 32 bit, defined just to know where only 32 bit is used
 typedef uint32_t uint24_t;
 typedef std::vector<uint8_t> ByteBuffer;
+typedef std::shared_ptr<Common::ByteBuffer> SharedByteBuffer;
 
 inline ByteBuffer ByteBufferFromCBuffer(const void *buffer, size_t len) {
     ByteBuffer bb;

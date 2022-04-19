@@ -1,4 +1,5 @@
 #include "common/common.h"
+#include "common/objectpool.h"
 
 namespace ProtoRock {
 namespace Common {
@@ -271,6 +272,9 @@ float PacketBuff::ReadFloat() {
     b[3] = Read();
     return f;
 }
+
+ObjectPool<PacketBuff> ObjectPools::PacketBuffPool;
+ObjectPool<ByteBuffer> ObjectPools::ByteBufferPool;
 
 }  // namespace Common
 }  // namespace ProtoRock
