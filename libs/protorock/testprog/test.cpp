@@ -84,10 +84,9 @@ int main() {
     // std::cout << "DONE!" << std::endl;
 
     // // return -1;
-    auto service = std::make_shared<CppServer::Asio::Service>();
-    service->Start();
-    auto raknet = std::make_shared<RaknetClient>(service, 1492);
+    auto raknet = std::make_shared<RaknetClient>(1400);
     try {
+        std::cout << "Sending offline ping" << std::endl;
         auto pongData = raknet->Ping("127.0.0.1", 19132);
         std::stringstream ss;
         for (int i = 0; i < pongData.size(); i++) {
@@ -99,7 +98,6 @@ int main() {
         return 1;
     }
 
-    CppCommon::Thread::Sleep(5000);
     raknet->Connect("127.0.0.1", 19132);
 
     // Wait connection
@@ -108,7 +106,7 @@ int main() {
         if (raknet->IsConnected()) {
             break;
         }
-        CppCommon::Thread::Yield();
+        Common::Yield();
     }
     std::cout << "Connected! Waiting packets" << std::endl;
     while (true) {
@@ -125,11 +123,10 @@ int main() {
         } catch (RaknetException &e) {
             std::cerr << "RaknetException receiving packet: " << e.msg << std::endl;
         }
-        CppCommon::Thread::Yield();
+        Common::Yield();
     }
     std::cout << "Disconnected. Closing..." << std::endl;
     raknet->DisconnectAndStop();
-    service->Stop();
 
     return 0;
 }

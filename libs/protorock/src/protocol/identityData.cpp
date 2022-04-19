@@ -1,14 +1,15 @@
 #include "protocol/identityData.h"
-#include "protocol/validate.h"
 
 #include <fmt/format.h>
-#include <system/uuid.h>
+
+#include "common/common.h"
+#include "protocol/validate.h"
 
 using namespace ProtoRock;
 using namespace ProtoRock::Protocol;
 
 IdentityData::IdentityData() {
-    Identity = CppCommon::UUID::Random().string();
+    Identity = Common::UUID::NewRandom().str();
     DisplayName = "Steve";
 }
 
@@ -29,7 +30,7 @@ Error IdentityData::Validate() {
         return Error(fmt::format("DisplayName may not have a number as first character, but got {}", DisplayName));
     }
 
-    if (DisplayName[0] == ' ' || DisplayName[DisplayName.size()-1] == ' ') {
+    if (DisplayName[0] == ' ' || DisplayName[DisplayName.size() - 1] == ' ') {
         return Error(fmt::format("DisplayName may not have a space as first/last character, but got {}", DisplayName));
     }
 
@@ -37,8 +38,8 @@ Error IdentityData::Validate() {
         return Error(fmt::format("DisplayName must only contain numbers, letters and spaces, but got {}", DisplayName));
     }
 
-	// We check here if the name contains at least 2 spaces after each other, which is not allowed. The name
-	// is only allowed to have single spaces.
+    // We check here if the name contains at least 2 spaces after each other, which is not allowed. The name
+    // is only allowed to have single spaces.
     if (DisplayName.find("  ") != std::string::npos) {
         return Error(fmt::format("DisplayName must only have single spaces, but got {}", DisplayName));
     }

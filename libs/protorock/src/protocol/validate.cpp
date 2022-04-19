@@ -6,11 +6,10 @@
 
 #include <fmt/core.h>
 #include <asio.hpp>
-#include <system/uuid.h>
 #include <jsoncpp/json/json.h>
 
 #include "common/base64.h"
-
+#include "common/common.h"
 using namespace ProtoRock;
 
 auto checkUsernameReg = std::regex("[A-Za-z0-9 ]");
@@ -26,10 +25,9 @@ bool ProtoRock::Validate::Version(const std::string &v) {
 }
 
 bool ProtoRock::Validate::UUID(const std::string &v) {
-    auto u = CppCommon::UUID::Nil();
     try {
-    u = v;
-    } catch(CppCommon::ArgumentException) {
+        Common::UUID::Parse(v);
+    } catch(Common::Exception) {
         return false;
     }
     return true;

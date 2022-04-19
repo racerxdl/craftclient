@@ -13,7 +13,6 @@ class Client {
    private:
     const ProtoRock::OAuth2::Token tkn;
     std::shared_ptr<RaknetClient> conn;
-    std::shared_ptr<CppServer::Asio::Service> service;
     Crypto::KeyPair keyPair;
     Protocol::IdentityData identityData;
     Protocol::ClientData clientData;

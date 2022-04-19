@@ -5,12 +5,12 @@
 
 #include <fmt/core.h>
 #include <asio.hpp>
-#include <system/uuid.h>
 #include <jsoncpp/json/json.h>
 
 #include "protocol.h"
 #include "protocol/validate.h"
 #include "common/base64.h"
+#include "common/common.h"
 #include "resources/skin.h"
 
 using namespace ProtoRock;
@@ -114,10 +114,10 @@ std::string emptySkin() {
 ClientData::ClientData() {
     OS = DeviceAndroid;
     GameVersion = CurrentVersion;
-    DeviceId = CppCommon::UUID::Random().string();
+    DeviceId = Common::UUID::NewRandom().str();
     LanguageCode = "en_US";
-    SelfSignedId = CppCommon::UUID::Random().string();
-    SkinId = CppCommon::UUID::Random().string();
+    SelfSignedId = Common::UUID::NewRandom().str();
+    SkinId = Common::UUID::NewRandom().str();
     SkinData = emptySkin();
     SkinImageHeight = 32;
     SkinImageWidth = 64;

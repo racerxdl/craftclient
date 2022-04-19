@@ -19,7 +19,15 @@ uint8_t PacketBuff::Read() {
     pop_front();
     return v;
 }
-
+void PacketBuff::ReadBytes(char *b, int n) {
+    if (n > size()) {
+        throw PacketBuffException("no enough bytes");
+    }
+    for (int i = 0; i < n; i++) {
+        b[i] = *(begin()+i);
+    }
+    erase(begin(), begin()+n);
+}
 void PacketBuff::ReadBytes(ByteBuffer &b, int n) {
     if (n > b.size()) {
         throw PacketBuffException("no enough space in target buffer");

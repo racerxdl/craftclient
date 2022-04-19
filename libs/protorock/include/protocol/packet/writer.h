@@ -1,8 +1,6 @@
 #pragma once
 
 #include <math/vectors.h>
-#include <system/uuid.h>
-
 #include <cstdint>
 
 #include "common/common.h"
@@ -57,10 +55,10 @@ class Writer {
         auto a = (uint32_t)(v[3] * 255.f);
         WriteVarint<uint32_t>(r | g << 8 | b << 16 | a << 24);
     }
-    void Write(const CppCommon::UUID uuid) {
-        auto d = uuid.data();
-        Common::ByteBuffer b(d.begin(), d.end());
-        buff->Write(b);
+    void Write(const Common::UUID uuid) {
+        for (int i = 0; i < 16; i++) {
+            buff->Write(uuid.value[i]);
+        }
     }
     void WriteUTF(const std::string v) {
         buff->WriteLE((int16_t)v.size());

@@ -8,15 +8,12 @@ using namespace ProtoRock;
 using namespace ProtoRock::Minecraft;
 
 Client::Client(const ProtoRock::OAuth2::Token &tkn) : tkn(tkn) {
-    service = std::make_shared<CppServer::Asio::Service>();
-    conn = std::make_shared<RaknetClient>(service, 1492);
-    service->Start();
+    conn = std::make_shared<RaknetClient>(1492);
     keyPair = Crypto::generateES384KeyPair();
 }
 
 Client::~Client() {
     conn->DisconnectAndStop();
-    service->Stop();
 }
 
 void Client::Connect(const std::string &serverAddress, int port) {

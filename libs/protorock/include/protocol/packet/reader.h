@@ -1,7 +1,6 @@
 #pragma once
 
 #include <math/vectors.h>
-#include <system/uuid.h>
 
 #include <cstdint>
 
@@ -64,7 +63,8 @@ class Reader {
         v.b = ((o >> 16) & 0xFF) / 255.f;
         v.a = ((o >> 24) & 0xFF) / 255.f;
     }
-    void Read(CppCommon::UUID &uuid) {
+    void Read(Common::UUID &uuid) {
+        buff->ReadBytes((char *)uuid.value, 16);
         throw Common::Exception("TODO");
     }
 

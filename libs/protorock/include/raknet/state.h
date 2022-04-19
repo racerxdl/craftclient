@@ -1,8 +1,6 @@
 #pragma once
 
-#include <server/asio/timer.h>
-#include <server/asio/udp_client.h>
-
+#include <asio.hpp>
 #include <atomic>
 #include <cstdint>
 #include <exception>
@@ -13,11 +11,11 @@
 #include <vector>
 
 #include "common.h"
-#include "udpClient.h"
 #include "datagramQueue.h"
 #include "packetQueue.h"
 #include "recoveryQueue.h"
 #include "safeQueue.h"
+#include "udpClient.h"
 
 namespace ProtoRock {
 
@@ -33,6 +31,7 @@ enum ConnMode {
     CLIENT,
     SERVER
 };
+class RaknetClient;
 
 struct state {
    private:
@@ -44,6 +43,7 @@ struct state {
     std::mutex datagramsRecvMtx;
     std::mutex connectionMtx;
     std::atomic<uint32_t> latency = 0;
+    std::shared_ptr<asio::io_service> service;
 
     datagramQueue dataQueue;
     recoveryQueue recQueue;
@@ -66,7 +66,7 @@ struct state {
     std::queue<ByteBuffer> packets;
     std::unordered_map<uint16_t, std::vector<ByteBuffer>> splits;
 
-    std::shared_ptr<UDPClient> parent;
+    std::shared_ptr<RaknetClient> parent;
 
     // MTU Discover
     void sendOpenConnectionRequest1(uint16_t);
@@ -102,18 +102,18 @@ struct state {
     std::atomic<bool> stop;
 
    public:
-    void process(ByteBuffer &);
+    void process(const ByteBuffer &);
     int Write(const ByteBuffer &);
     ByteBuffer Read();
     void Disconnect();
     bool IsConnected() { return connected; }
     bool IsInvalid() { return isInvalid; }
 
-    state(std::shared_ptr<UDPClient> parent, UDPAddress remote, uint64_t guid, ConnMode mode = CLIENT);
+    state(std::shared_ptr<RaknetClient> parent, UDPAddress remote, uint64_t guid, int mtuSize = 1400, ConnMode mode = CLIENT);
 };
 typedef std::shared_ptr<state> State;
 
-inline State MakeState(std::shared_ptr<UDPClient> parent, UDPAddress remote, uint64_t guid, ConnMode mode = CLIENT) {
-    return std::make_shared<state>(parent, remote, guid, mode);
+inline State MakeState(std::shared_ptr<RaknetClient> parent, UDPAddress remote, uint64_t guid, int mtuSize = 1400, ConnMode mode = CLIENT) {
+    return std::make_shared<state>(parent, remote, guid, mtuSize, mode);
 }
 }  // namespace ProtoRock

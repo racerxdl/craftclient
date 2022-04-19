@@ -1,7 +1,10 @@
 #include "state.h"
 
+#include <iostream>
+
 #include "message.h"
 #include "objectpool.h"
+#include "raknet.h"
 
 using namespace ProtoRock;
 using namespace std::literals;
@@ -14,15 +17,8 @@ constexpr int maxWindowSize = 1024;
 
 static ObjectPool<packet> packetPool;
 
-state::state(std::shared_ptr<UDPClient> parent, UDPAddress remote, uint64_t guid, ConnMode mode)
-    : timer(*parent->service()->GetAsioService(), asio::chrono::milliseconds(100)),
-      mode(mode),
-      parent(parent),
-      guid(guid),
-      remote(parent->endpoint()),
-      currentState(DISCOVER_MTU_SIZE),
-      mtuSize(maxMTUSize),
-      stop(false) {
+state::state(std::shared_ptr<RaknetClient> parent, UDPAddress remote, uint64_t guid, int mtuSize, ConnMode mode)
+    : service(parent->getService()), timer(*service, asio::chrono::milliseconds(100)), mode(mode), parent(parent), guid(guid), remote(remote), currentState(DISCOVER_MTU_SIZE), mtuSize(mtuSize), stop(false) {
     this->packet = MakePacket();
     timer.expires_from_now(100ms);
     timer.async_wait(std::bind(&state::onTick, this, std::placeholders::_1));
@@ -36,7 +32,7 @@ void state::sendOpenConnectionRequest1(uint16_t mtu) {
     p.Write(b);
     auto buf = b.ToBuffer();
     buf.resize(mtu);
-    parent->Send(buf.data(), buf.size());
+    parent->client->Send(buf);
 }
 
 void state::sendOpenConnectionRequest2(uint16_t mtu) {
@@ -48,7 +44,7 @@ void state::sendOpenConnectionRequest2(uint16_t mtu) {
     p.Write(b);
     auto buf = b.ToBuffer();
     buf.resize(mtu);
-    parent->Send(buf.data(), buf.size());
+    parent->client->Send(buf);
 }
 
 void state::onTick(const asio::system_error ec) {
@@ -223,8 +219,7 @@ int state::write(const ByteBuffer &b) {
         }
         pk->write(buf);
         auto b = buf.ToBuffer();
-        //std::cout << "Sending " << b.size() << " bytes" << std::endl;
-        parent->Send(remote, b.data(), b.size());
+        parent->client->SendTo(remote, b);
         buf.clear();
 
         recQueue.put(sequenceNumber, pk);
@@ -242,7 +237,7 @@ ByteBuffer state::Read() {
     // TODO: Timeout
     auto p = receivedPackets.Get();
     while (!p.second) {
-        CppCommon::Thread::Yield();
+        Common::Yield();
         if (!IsConnected()) {
             throw RaknetException("not connected");
         }
@@ -404,7 +399,7 @@ void state::sendAcknowledgement(const std::vector<uint24_t> ids, uint8_t flag, P
         ack.write(b, mtuSize);
         ack.packets.erase(ack.packets.begin());
         auto buf = b.ToBuffer();
-        parent->Send(remote, buf.data(), buf.size());
+        parent->client->SendTo(remote, buf);
     }
     b.resize(0);
 }
@@ -520,7 +515,7 @@ void state::resend(std::vector<uint24_t> sequenceNumbers) {
         buf.WriteUint24(newSeqNum);
         p->write(buf);
         auto b = buf.ToBuffer();
-        parent->Send(remote, b.data(), b.size());
+        parent->client->SendTo(remote, b);
         recQueue.put(newSeqNum, p);
         buf.resize(0);
     }
@@ -538,14 +533,14 @@ void state::Disconnect() {
     }
     connected = false;
     if (mode == CLIENT) {
-        parent->Disconnect();
+        parent->client->Disconnect();
     }
 
     currentState = DISCOVER_MTU_SIZE;
     isInvalid = true;
 }
 
-void state::process(ByteBuffer &bb) {
+void state::process(const ByteBuffer &bb) {
     if (currentState == DISCOVER_MTU_SIZE) {
         auto b = PacketBuff(bb);
         auto id = b.Read();

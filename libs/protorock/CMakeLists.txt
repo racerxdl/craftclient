@@ -6,8 +6,10 @@ set(ProtoRock_VERSION_MAJOR 1)
 set(ProtoRock_VERSION_MINOR 0)
 
 # specify the C++ standard
+cmake_policy(SET CMP0067 NEW)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 # set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 # set(CMAKE_CXX_FLAGS "-fPIC -O2")
 #set(CMAKE_CXX_FLAGS "-fPIC -O2")
@@ -22,7 +24,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(conan.cmake)
 
-conan_cmake_configure(REQUIRES cpr/1.8.1 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 cppserver/1.0.1.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
+conan_cmake_configure(REQUIRES asio/1.22.1 cpr/1.8.1 libuuid/1.0.3 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
                       GENERATORS cmake_find_package)
 
 conan_cmake_autodetect(settings)
@@ -36,9 +38,10 @@ conan_cmake_install(PATH_OR_REFERENCE .
 file(GLOB_RECURSE HEADERS include/*.h)
 
 # Dependencies
+find_package(asio)
+find_package(libuuid)
 find_package(picojson)
 find_package(jwt-cpp)
-find_package(cppserver)
 find_package(fmt)
 find_package(jsoncpp)
 find_package(date)
@@ -58,12 +61,11 @@ include_directories(include/minecraft)
 include_directories(../craftblock/include)
 include_directories(${picojson_INCLUDE_DIRS})
 include_directories(${date_INCLUDE_DIRS})
-
+include_directories(${libuuid_INCLUDE_DIRS})
 
 add_definitions(${jwt-cpp_DEFINITIONS})
-add_definitions(${cppserver_DEFINITIONS})
 
-set(LINKED_LIBS jwt-cpp::jwt-cpp cppserver::cppserver jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
+set(LINKED_LIBS asio::asio libuuid::libuuid jwt-cpp::jwt-cpp jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 add_executable(${PROJECT_NAME}_test ${HEADERS} ${SOURCES} ${TEST_SRC})

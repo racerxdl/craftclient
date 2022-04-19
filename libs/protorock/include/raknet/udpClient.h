@@ -1,20 +1,40 @@
 #pragma once
 
-#include <server/asio/udp_client.h>
+#include <asio.hpp>
+#include <memory>
+
+#include "common.h"
 
 namespace ProtoRock {
-    class UDPClient : public CppServer::Asio::UDPClient {
+    using asio::ip::udp;
+    class UDPClient : public std::enable_shared_from_this<UDPClient>  {
     private:
-        void onConnected() override;
-        void onDisconnected() override;
-        void onReceived(const asio::ip::udp::endpoint& endpoint, const void* buffer, size_t size) override;
-        void onError(int error, const std::string& category, const std::string& message) override;
+        Common::ByteBuffer rxbuffer;
+        std::shared_ptr<asio::io_service> ioService;
+        udp::socket socket;
+        std::atomic<bool> receiving;
+
+        void onConnected();
+        void onDisconnected();
+        void onReceived(const asio::ip::udp::endpoint& endpoint, const Common::ByteBuffer &b);
+        void onError(int error, const std::string& category, const std::string& message);
+        void ReceiveAsync();
+
+        std::shared_ptr<UDPClient> getUDPClient() { return shared_from_this(); }
     public:
-        uint64_t guid;
+        Common::UUID id;
+        udp::endpoint remoteEndpoint;
+        udp::endpoint localEndpoint;
         std::function<void()> cbOnConnected;
         std::function<void()> cbOnDisconnected;
-        std::function<void(const asio::ip::udp::endpoint& endpoint, const void* buffer, size_t size)> cbOnReceived;
+        std::function<void(const asio::ip::udp::endpoint& endpoint, const Common::ByteBuffer &b)> cbOnReceived;
         std::function<void(int error, const std::string& category, const std::string& message)> cbOnError;
-        UDPClient(std::shared_ptr<CppServer::Asio::Service> service, const std::string &address, uint16_t port);
+
+        void Send(const Common::ByteBuffer &b) { SendTo(remoteEndpoint, b); }
+        void SendTo(const asio::ip::udp::endpoint& endpoint, const Common::ByteBuffer &b);
+        void Disconnect() { socket.close(); }
+        void Connect();
+
+        UDPClient(std::shared_ptr<asio::io_service> service, const std::string &address, uint16_t port);
     };
 }

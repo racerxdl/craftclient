@@ -1,7 +1,5 @@
 #pragma once
 
-#include <server/asio/service.h>
-
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -9,13 +7,14 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <uuid.h>
+#include <asio.hpp>
 
 namespace ProtoRock {
 namespace Common {
 
 typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> Time;
 typedef std::chrono::milliseconds TimeDuration;
-typedef std::shared_ptr<CppServer::Asio::Service> AsioService;
 typedef std::vector<std::string> StringList;
 
 // 24 bit unsigned int. It's actually a 32 bit, defined just to know where only 32 bit is used
@@ -53,6 +52,7 @@ class PacketBuff : public std::deque<uint8_t> {
     uint8_t Read();
     ByteBuffer ReadBytes(int);
     void ReadBytes(ByteBuffer &, int);
+    void ReadBytes(char *b, int n);
     uint16_t ReadU16BE();
     uint32_t ReadU32BE();
     uint64_t ReadU64BE();
@@ -109,5 +109,21 @@ inline int64_t timestamp() {
                std::chrono::system_clock::now().time_since_epoch())
         .count();
 }
+
+struct UUID {
+    unsigned char value[16];
+
+    UUID() {}
+    UUID(const UUID &u) { memcpy(value, u.value, 16); }
+    UUID(const unsigned char v[16]) { memcpy(value, v, 16); }
+    std::string str();
+    uint64_t asUint64() { return *(uint64_t*)(value); }
+    static UUID NewRandom() { UUID v; uuid_generate_random(v.value); return v; }
+    static UUID NewTime()  { UUID v; uuid_generate_time(v.value); return v; }
+    static UUID Parse(const std::string &s) { UUID v; if (uuid_parse(s.c_str(), v.value) == -1) { throw Exception("invalid UUID"); } return v; }
+};
+
+void Yield() noexcept;
+
 }  // namespace Common
 }  // namespace ProtoRock

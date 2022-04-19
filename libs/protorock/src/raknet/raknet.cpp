@@ -1,5 +1,9 @@
 #include "raknet.h"
 
+#include <uuid.h>
+
+#include <iostream>
+
 #include "message.h"
 #include "objectpool.h"
 
@@ -7,17 +11,33 @@ using namespace ProtoRock;
 using namespace std::literals;
 using namespace std::placeholders;
 
-RaknetClient::RaknetClient(std::shared_ptr<CppServer::Asio::Service> service, int16_t mtuSize)
-    : service(service), stop(false) {
+RaknetClient::RaknetClient(int16_t mtuSize)
+    : stop(false),
+      serviceStarted(false),
+      ioService(std::make_shared<asio::io_service>()),
+      mtuSize(mtuSize) {
+    ioThread = std::thread(&RaknetClient::ioRoutine, this);
+    while (!serviceStarted) {
+        Common::Yield();
+    }
+    std::cout << "Service started" << std::endl;
 }
 
 void RaknetClient::Connect(const std::string &address, int port) {
-    client = std::make_shared<UDPClient>(service, address, port);
+    client = std::make_shared<UDPClient>(getService(), address, port);
     client->cbOnConnected = std::bind(&RaknetClient::onConnected, this);
     client->cbOnDisconnected = std::bind(&RaknetClient::onConnected, this);
-    client->cbOnReceived = std::bind(&RaknetClient::onReceived, this, _1, _2, _3);
+    client->cbOnReceived = std::bind(&RaknetClient::onReceived, this, _1, _2);
     client->cbOnError = std::bind(&RaknetClient::onError, this, _1, _2, _3);
-    client->ConnectAsync();
+    client->Connect();
+    connected = true;
+}
+
+void RaknetClient::ioRoutine() {
+    asio::io_service::work work(*ioService);
+    serviceStarted = true;
+    ioService->run();
+    std::cout << "IO Routine stopped" << std::endl;
 }
 
 void RaknetClient::DisconnectAndStop() {
@@ -29,46 +49,24 @@ void RaknetClient::DisconnectAndStop() {
     }
     connMtx.unlock();
     if (client) {
-        client->DisconnectAsync();
+        client->Disconnect();
     }
-    while (IsConnected()) CppCommon::Thread::Yield();
+    connected = false;
+    ioService->stop();
 }
 
 void RaknetClient::onConnected() {
-    std::cout << "Echo UDP client connected a new session with Id " << client->id() << std::endl;
+    std::cout << "Echo UDP client connected a new session with Id " << client->id.str() << std::endl;
 
     connMtx.lock();
     if (!connection) {  // New connection
-        uint64_t guid;
-        auto idBytes = client->id().data();
-        uint8_t *_guid = (uint8_t *)&guid;
-        for (int i = 0; i < 8; i++) {
-            _guid[i] = idBytes[i];
-        }
-        connection = MakeState(client, client->endpoint(), guid);
+        connection = MakeState(getRaknetClient(), client->remoteEndpoint, client->id.asUint64(), mtuSize);
     }
     connMtx.unlock();
 }
 
-void RaknetClient::onDisconnected() {
-    std::cout << "Echo UDP client disconnected a session with Id " << client->id() << std::endl;
-
-    connMtx.lock();
-    connection->Disconnect();
-    connection = nullptr;
-    stop = true;
-    connMtx.unlock();
-
-    // Wait for a while...
-    CppCommon::Thread::Sleep(1000);
-
-    // Try to connect again
-    if (!stop) client->ConnectAsync();
-}
-
-void RaknetClient::onReceived(const asio::ip::udp::endpoint &endpoint, const void *buffer, size_t size) {
-    auto bb = ByteBufferFromCBuffer(buffer, size);
-    connection->process(bb);
+void RaknetClient::onReceived(const asio::ip::udp::endpoint &endpoint, const ByteBuffer &b) {
+    connection->process(b);
 }
 
 void RaknetClient::onError(int error, const std::string &category, const std::string &message) {
@@ -102,53 +100,50 @@ ByteBuffer RaknetClient::Ping(const std::string &address, int port, Time deadlin
     RaknetException error("");
     ByteBuffer data;
 
-    auto u = std::make_shared<UDPClient>(service, address, port);
+    auto u = std::make_shared<UDPClient>(getService(), address, port);
     u->cbOnConnected = [&]() {
         if (dataReady) {
             return;
         }
         try {
             auto p = UnconnectedPing();
-            p.clientGUID = u->guid;
+            p.clientGUID = u->id.asUint64();
             p.sendTimestamp = timestamp();
             auto bb = PacketBuff();
             p.Write(bb);
-            auto buff = bb.ToBuffer();
-            u->Send(buff.data(), buff.size());
+            u->Send(bb.ToBuffer());
         } catch (RaknetException &e) {
             error = e;
             errored = true;
             dataReady = true;
         }
     };
-    u->cbOnReceived = [&](const asio::ip::udp::endpoint& endpoint, const void* buffer, size_t size) {
+    u->cbOnReceived = [&](const asio::ip::udp::endpoint &endpoint, const ByteBuffer &b) {
         if (dataReady) {
             return;
         }
         try {
-            auto bb = PacketBuff((const char *)buffer, size);
-            bb.Read(); // discard id, assume pong
+            auto bb = PacketBuff(b);
+            bb.Read();  // discard id, assume pong
             auto p = UnconnectedPong();
             p.Read(bb);
             data = p.data;
             errored = false;
             dataReady = true;
-        } catch(RaknetException &e) {
+        } catch (RaknetException &e) {
             error = e;
             errored = true;
             dataReady = true;
         }
     };
 
-    if (!u->Connect()) {
-        throw RaknetException("cannot connect to " + address);
-    }
+    u->Connect();
 
     bool deadlineExceeded = false;
-    //std::cout << "Waiting for pong" << std::endl;
-    // Wait for ping
+    // std::cout << "Waiting for pong" << std::endl;
+    //  Wait for ping
     while (!dataReady) {
-        CppCommon::Thread::Yield();
+        Common::Yield();
         if (Now() > deadline) {
             // Deadline exceeded
             deadlineExceeded = true;

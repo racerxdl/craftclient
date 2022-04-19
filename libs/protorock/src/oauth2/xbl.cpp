@@ -2,8 +2,8 @@
 
 #include <cpr/cpr.h>
 #include <jwt-cpp/jwt.h>
-#include <system/uuid.h>
 
+#include "common/common.h"
 #include "common/base64.h"
 #include "common/crypto.h"
 #include "oauth2/live.h"
@@ -23,7 +23,7 @@ std::string ObtainDeviceToken(const KeyPair &keyPair) {
     payload["TokenType"] = "JWT";
     auto properties = Json::Value();
     properties["AuthMethod"] = "ProofOfPossession";
-    properties["Id"] = "{" + CppCommon::UUID::Random().string() + "}";
+    properties["Id"] = "{" + ProtoRock::Common::UUID::NewRandom().str() + "}";
     properties["DeviceType"] = "Android";
     properties["Version"] = "10";
     auto proofKey = Json::Value();
