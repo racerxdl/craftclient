@@ -77,17 +77,17 @@ class alignas(vec_t) TypedBaseVec {
 
     constexpr size_t size() { return N; }
 
-    TypedBaseVec<N, vec_t>(std::initializer_list<vec_t> vals) {
+    TypedBaseVec(std::initializer_list<vec_t> vals) {
         for (int i = 0; i < N; i++) {
             memory[i] = vals.begin()[i];
         }
     }
-    TypedBaseVec<N, vec_t>(const TypedBaseVec<N, vec_t>& o) {
+    TypedBaseVec(const TypedBaseVec<N, vec_t>& o) {
         for (int i = 0; i < N; i++) {
             memory[i] = o[i];
         }
     }
-    TypedBaseVec<N, vec_t>() {
+    TypedBaseVec() {
         for (int i = 0; i < N; i++) {
             memory[i] = 0.f;
         }
@@ -205,7 +205,7 @@ class alignas(float) BaseVec : public TypedBaseVec<N, float> {
    public:
     using TypedBaseVec<N, float>::TypedBaseVec;
     using TypedBaseVec<N, float>::CrossProduct;
-    BaseVec<N>(const TypedBaseVec<N, float> &v) : TypedBaseVec<N, float>(v) {}
+    BaseVec(const TypedBaseVec<N, float> &v) : TypedBaseVec<N, float>(v) {}
     const float* AsFloatArray() const { return &this->memory[0]; }
     float* AsFloatArray() { return &this->memory[0]; }
 };
@@ -216,7 +216,7 @@ class alignas(float) BaseIVec : public TypedBaseVec<N, int32_t> {
    public:
     using TypedBaseVec<N, int32_t>::TypedBaseVec;
     using TypedBaseVec<N, int32_t>::CrossProduct;
-    BaseIVec<N>(const TypedBaseVec<N, int32_t> &v) : TypedBaseVec<N, int32_t>(v) {}
+    BaseIVec(const TypedBaseVec<N, int32_t> &v) : TypedBaseVec<N, int32_t>(v) {}
     const int32_t* AsInt32Array() const { return &this->memory[0]; }
     int32_t* AsInt32Array() { return &this->memory[0]; }
 };
