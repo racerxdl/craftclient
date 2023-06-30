@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 
 # set the project name
 project(ProtoRock CXX)
@@ -24,7 +24,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(conan.cmake)
 
-conan_cmake_configure(REQUIRES asio/1.22.1 cpr/1.8.1 tiny-aes-c/1.0.0 libdeflate/1.10 libuuid/1.0.3 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
+conan_cmake_configure(REQUIRES asio/1.22.1 cpr/1.8.1 libdeflate/1.10 libuuid/1.0.3 libcurl/7.80.0 jwt-cpp/0.6.0 picojson/1.3.0 openssl/1.1.1m fmt/8.0.0 jsoncpp/1.9.5 date/3.0.1
                       GENERATORS cmake_find_package)
 
 conan_cmake_autodetect(settings)
@@ -47,11 +47,11 @@ find_package(jsoncpp)
 find_package(date)
 find_package(cpr)
 find_package(libdeflate)
-find_package(tiny-aes-c)
 
 # Find source files
-file(GLOB SOURCES src/*.cpp src/common/*.cpp src/minecraft/packet/*.cpp src/minecraft/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp)
-file(GLOB TEST_SRC testprog/*.cpp)
+file(GLOB SOURCES  src/*.cpp src/protocol/nbt/*.cpp src/common/*.cpp src/minecraft/packet/*.cpp src/minecraft/*.cpp src/raknet/*.cpp src/protocol/*.cpp src/oauth2/*.cpp src/*.c)
+file(GLOB TEST_SRC testprog/test.cpp)
+file(GLOB TEST2_SRC testprog/raktest.cpp)
 
 # Include header files
 include_directories(include)
@@ -60,6 +60,7 @@ include_directories(include/oauth2)
 include_directories(include/raknet)
 include_directories(include/protocol)
 include_directories(include/minecraft)
+include_directories(include/aes)
 include_directories(../craftblock/include)
 include_directories(${picojson_INCLUDE_DIRS})
 include_directories(${date_INCLUDE_DIRS})
@@ -67,13 +68,15 @@ include_directories(${libuuid_INCLUDE_DIRS})
 
 add_definitions(${jwt-cpp_DEFINITIONS})
 
-set(LINKED_LIBS asio::asio libuuid::libuuid tiny-aes-c::tiny-aes-c libdeflate::libdeflate jwt-cpp::jwt-cpp jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
+set(LINKED_LIBS asio::asio libuuid::libuuid libdeflate::libdeflate jwt-cpp::jwt-cpp jsoncpp::jsoncpp fmt::fmt cpr::cpr jsoncpp)
 
 add_library(${PROJECT_NAME} STATIC ${HEADERS} ${SOURCES})
 add_executable(${PROJECT_NAME}_test ${HEADERS} ${SOURCES} ${TEST_SRC})
+add_executable(${PROJECT_NAME}_test2 ${HEADERS} ${SOURCES} ${TEST2_SRC})
 
 target_link_libraries(${PROJECT_NAME} ${LINKED_LIBS})
 target_link_libraries(${PROJECT_NAME}_test ${LINKED_LIBS})
+target_link_libraries(${PROJECT_NAME}_test2 ${LINKED_LIBS})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${ProtoRock_VERSION_MAJOR}_${ProtoRock_VERSION_MINOR})
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION_MAJOR ${ProtoRock_VERSION_MAJOR})

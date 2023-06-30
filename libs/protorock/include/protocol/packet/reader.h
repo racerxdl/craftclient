@@ -21,6 +21,7 @@ class Reader {
     void Read(int8_t &v) { v = (uint8_t)buff->Read(); }
     void Read(bool &v) { v = buff->Read() ? true : false; }
     void ReadFloat(float &v) { v = buff->ReadFloat(); }
+    void ReadDouble(double &v) { v = buff->ReadDouble(); }
     void Read(std::string &s) {
         uint32_t length;
         ReadVarint(length);
@@ -68,7 +69,8 @@ class Reader {
         buff->ReadBytes((char *)uuid.value, 16);
         throw Common::Exception("TODO");
     }
-
+    void ReadRaw(Common::ByteBuffer &b) { buff->ReadRaw(b); }
+    void ReadRaw(Common::SharedByteBuffer &b) { buff->ReadRaw(b); }
     template <typename int_t = uint64_t>
     void ReadVarint(int_t &v) {
         constexpr int count = sizeof(int_t) == 8 ? 70 : 35;

@@ -19,6 +19,7 @@ class Writer {
     Writer(std::shared_ptr<Common::PacketBuff> buff) : buff(buff) {}
     void SetShieldId(int32_t shieldId) { this->shieldId = shieldId; }
     void WriteFloat(const float v) { buff->WriteFloat(v); }
+    void WriteDouble(const float v) { buff->WriteDouble(v); }
     void Write(const uint8_t v) { buff->Write(v); }
     void Write(const int8_t v) { Write((uint8_t)v); }
     void Write(const bool v) { Write((uint8_t)(v ? 1 : 0)); }
@@ -31,6 +32,7 @@ class Writer {
         buff->Write(v);
     }
     void WriteRaw(const Common::ByteBuffer v) { buff->Write(v); }
+    void WriteRaw(const Common::SharedByteBuffer v) { buff->Write(v); }
     void WriteByteFloat(const float v) { Write((uint8_t)(v / (360.0 / 256.0))); }
     void Write(const CraftBlock::Vec2 v) {
         WriteFloat(v.x);

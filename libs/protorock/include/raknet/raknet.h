@@ -49,7 +49,7 @@ class RaknetClient : public std::enable_shared_from_this<RaknetClient> {
     void Start();
     void DisconnectAndStop();
     int Write(const ByteBuffer&);
-    ByteBuffer Read();
+    SharedByteBuffer Read();
     bool IsConnected();
 
     ByteBuffer Ping(const std::string &address, int port, Time deadline = defaultDeadline());

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+#include <list>
 
 #include "protocol/packet/id.h"
 #include "protocol/packet/reader.h"
@@ -12,8 +14,12 @@ namespace Packet {
 
 struct Packet {
     virtual PacketID Id() const = 0;
+    virtual bool IsRaw() const = 0;
     virtual void Serialize(Writer &w) const = 0;
     virtual void Deserialize(Reader &r) = 0;
+
+    template <typename T, typename std::enable_if<std::is_base_of<Packet, T>::value>::type* = nullptr>
+    T as() { return *dynamic_cast<T*>(this); }
 };
 
 struct PacketHeader {
@@ -31,6 +37,22 @@ struct PacketHeader {
         TargetSubClient = (uint8_t)((v >> 12) & 3);
     }
 };
+
+// Raw packet for unknown packets
+struct RawPacket : public Packet {
+    PacketID id;
+    Common::ByteBuffer payload;
+
+    RawPacket(PacketID id) : id(id) {}
+    bool IsRaw() const override { return true; }
+    PacketID Id() const override { return id; }
+    void Serialize(Writer &w) const override { w.WriteRaw(payload); };
+    void Deserialize(Reader &r) override { r.ReadRaw(payload); }
+};
+
+typedef std::shared_ptr<Packet> IPacket;
+typedef std::function<IPacket()> PacketCreateFunction;
+using PacketList = std::list<IPacket>;
 
 }  // namespace Packet
 }  // namespace Protocol

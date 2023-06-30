@@ -131,7 +131,7 @@ void state::checkResend(Time t) {
 
     if (l > 0) {
         resends += l;
-        std::cout << "Resends: " << l << " - " << resends << std::endl;
+        // std::cout << "Resends: " << l << " - " << resends << std::endl;
         if (resends > 30) {
             Disconnect();
         }
@@ -230,7 +230,7 @@ int state::write(const ByteBuffer &b) {
     return n;
 }
 
-ByteBuffer state::Read() {
+SharedByteBuffer state::Read() {
     if (!IsConnected()) {
         throw RaknetException("not connected");
     }
@@ -266,9 +266,9 @@ void state::receive(const ByteBuffer &_b) {
     receiveDatagram(b);
 }
 
+
 void state::receiveDatagram(PacketBuff &b) {
     auto sequenceNumber = b.ReadUint24();
-
     datagramsRecvMtx.lock();
     datagramsReceived.push_back(sequenceNumber);
     datagramsRecvMtx.unlock();
@@ -314,7 +314,7 @@ void state::handleSplitPacket(Packet p) {
         splits[p->splitId].resize(p->splitCount);
     }
 
-    auto m = splits[p->splitId];
+    auto &m = splits[p->splitId];
     if (p->splitIndex > m.size() - 1) {
         throw RaknetException("error handing split packet: splitIndex out of range");
     }
@@ -359,7 +359,6 @@ void state::receivePacket(Packet p) {
 void state::handlePacket(ByteBuffer &p) {
     auto b = PacketBuff(p);
     auto id = b.Read();
-    // std::cout << "Received packet " << (int)id << std::endl;
     switch (id) {
         case IDConnectionRequest:
             handleConnectionRequest(b);
@@ -385,7 +384,7 @@ void state::handlePacket(ByteBuffer &p) {
         default:
             b.push_front(id);
             // Passthrough data
-            receivedPackets.Put(b.ToBuffer());
+            receivedPackets.Put(b.ToSharedBuffer());
     }
 }
 

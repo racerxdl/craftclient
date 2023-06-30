@@ -19,6 +19,7 @@ struct Login : public Packet {
     // client public key to initiate encryption.
     Common::ByteBuffer ConnectionRequest;
 
+    bool IsRaw() const override { return false; }
     PacketID Id() const override { return PacketID::Login; }
     virtual void Serialize(Writer &w) const override {
         w.WriteBE(ClientProtocol);

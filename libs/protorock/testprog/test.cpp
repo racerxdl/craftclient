@@ -41,35 +41,9 @@ int main() {
 
     auto client = std::make_shared<Minecraft::Client>(tkn);
 
-    client->Connect("127.0.0.1", 19132);
+    client->Connect("10.10.5.43", 19000);
 
-    // // Wait connection
-    // std::cout << "Waiting connection" << std::endl;
-    // while (true) {
-    //     if (raknet->IsConnected()) {
-    //         break;
-    //     }
-    //     Common::Yield();
-    // }
-    // std::cout << "Connected! Waiting packets" << std::endl;
-    // while (true) {
-    //     if (!raknet->IsConnected()) {
-    //         break;
-    //     }
-    //     try {
-    //         auto p = raknet->Read();
-    //         std::stringstream ss;
-    //         for (int i = 0; i < p.size(); i++) {
-    //             ss << (unsigned char)p[i];
-    //         }
-    //         std::cout << "Received packet: " << ss.str() << std::endl;
-    //     } catch (RaknetException &e) {
-    //         std::cerr << "RaknetException receiving packet: " << e.msg << std::endl;
-    //     }
-    //     Common::Yield();
-    // }
-    // std::cout << "Disconnected. Closing..." << std::endl;
-    // raknet->DisconnectAndStop();
+    std::this_thread::sleep_for (10s);
 
     return 0;
 }

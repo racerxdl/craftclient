@@ -82,7 +82,7 @@ int RaknetClient::Write(const ByteBuffer &b) {
     throw RaknetException("not connected");
 }
 
-ByteBuffer RaknetClient::Read() {
+SharedByteBuffer RaknetClient::Read() {
     if (connection) {
         return connection->Read();
     }
