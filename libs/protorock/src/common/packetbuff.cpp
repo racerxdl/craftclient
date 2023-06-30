@@ -25,9 +25,9 @@ void PacketBuff::ReadBytes(char *b, int n) {
         throw PacketBuffException("no enough bytes");
     }
     for (int i = 0; i < n; i++) {
-        b[i] = *(begin()+i);
+        b[i] = *(begin() + i);
     }
-    erase(begin(), begin()+n);
+    erase(begin(), begin() + n);
 }
 void PacketBuff::ReadBytes(ByteBuffer &b, int n) {
     if (n > b.size()) {
@@ -38,9 +38,9 @@ void PacketBuff::ReadBytes(ByteBuffer &b, int n) {
     }
 
     for (int i = 0; i < n; i++) {
-        b[i] = *(begin()+i);
+        b[i] = *(begin() + i);
     }
-    erase(begin(), begin()+n);
+    erase(begin(), begin() + n);
 }
 
 ByteBuffer PacketBuff::ReadBytes(int n) {
@@ -263,6 +263,18 @@ void PacketBuff::WriteFloat(float f) {
     Write(b[3]);
 }
 
+void PacketBuff::WriteDouble(float f) {
+    auto b = (char *)&f;
+    Write(b[0]);
+    Write(b[1]);
+    Write(b[2]);
+    Write(b[3]);
+    Write(b[4]);
+    Write(b[5]);
+    Write(b[6]);
+    Write(b[7]);
+}
+
 float PacketBuff::ReadFloat() {
     float f;
     auto b = (char *)&f;
@@ -271,6 +283,28 @@ float PacketBuff::ReadFloat() {
     b[2] = Read();
     b[3] = Read();
     return f;
+}
+
+double PacketBuff::ReadDouble() {
+    double f;
+    auto b = (char *)&f;
+    b[0] = Read();
+    b[1] = Read();
+    b[2] = Read();
+    b[3] = Read();
+    b[4] = Read();
+    b[5] = Read();
+    b[6] = Read();
+    b[7] = Read();
+    return f;
+}
+
+SharedByteBuffer PacketBuff::ToSharedBuffer() {
+    auto b = ObjectPools::ByteBufferPool.Get();
+    b->reserve(size());
+    b->resize(0);
+    b->insert(b->begin(), begin(), end());
+    return b;
 }
 
 ObjectPool<PacketBuff> ObjectPools::PacketBuffPool;

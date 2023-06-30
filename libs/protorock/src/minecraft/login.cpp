@@ -145,8 +145,6 @@ ParsedLogin Login::Parse(const ByteBuffer &request) {
             throw Exception(fmt::format("error validating signature chain0: {}", e.what()));
         }
         authenticated = mojangKey.X() == identityKey.X() && mojangKey.Y() == identityKey.Y();
-        std::cout << mojangKey.X() << " == " << identityKey.X() << std::endl;
-        std::cout << mojangKey.Y() << " == " << identityKey.Y() << std::endl;
         auto chain1 = jwt::decode(chain[1].asString());
         auto chain2 = jwt::decode(chain[2].asString());
         auto key1 = chain1.get_header_claims()["x5u"].as_string();

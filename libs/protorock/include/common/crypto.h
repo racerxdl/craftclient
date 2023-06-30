@@ -1,7 +1,7 @@
 #pragma once
 
 #include <openssl/ec.h>
-#include <aes.hpp>
+#include <openssl/aes.h>
 
 #include "common/base64.h"
 #include "common/common.h"
@@ -18,6 +18,8 @@ struct KeyPair {
    public:
     Common::ByteBuffer publicKey;
     Common::ByteBuffer privateKey;
+
+    Common::ByteBuffer DHComputeKey(const KeyPair &peer);
 
     KeyPair(const KeyPair &k);
     KeyPair(const std::string &x509publicKey);
@@ -41,14 +43,19 @@ KeyPair generateP256KeyPair();
 class Minecrypt {
 private:
     Common::ByteBuffer keyBytes;
+    Common::ByteBuffer ivBytes;
     Common::ByteBuffer counterBuff;
     Common::ByteBuffer hashBuff;
-    AES_ctx ctx;
     uint64_t sendCounter;
+    EVP_CIPHER_CTX *ctx;
+
+    void XORBuffer(Common::ByteBuffer &data);
 public:
     Minecrypt(const Common::ByteBuffer &keyBytes);
+    ~Minecrypt();
     void Encrypt(Common::ByteBuffer &buffer);
     void Decrypt(Common::ByteBuffer &buffer);
+    void Verify(const Common::ByteBuffer &buffer);
 };
 
 }  // namespace Crypto

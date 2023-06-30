@@ -207,25 +207,24 @@ int main(void) {
     chunk.PutBlock(10, 11, 0, CraftBlock::Lava);
     chunk.PutBlock(11, 11, 0, CraftBlock::Lava);
     chunk.PutBlock(12, 11, 0, CraftBlock::Lava);
-    chunk.PutBlock(11, 11, 1, CraftBlock::TallGrass);
 
     auto chunkList = std::vector<std::shared_ptr<ChunkObject>>();
 
-    auto chunksToRender = 12;
+    // auto chunksToRender = 12;
 
-    for (int i = 0; i < chunksToRender; i++) {
-        for (int j = 0; j < chunksToRender; j++) {
-                auto c = std::make_shared<ChunkObject>(atlas);
-                c->SetPos(Vec3{(float)16*i, (float)0, (float)16*j});
-                for (int x = 0; x < 16; x++) {
-                    for (int z = 0; z < 16; z++) {
-                        c->PutBlock(x, z, 0, CraftBlock::Grass);
-                        c->PutBlock(x, z, -64, CraftBlock::Grass);
-                    }
-                }
-                chunkList.push_back(c);
-        }
-    }
+    // for (int i = 0; i < chunksToRender; i++) {
+    //     for (int j = 0; j < chunksToRender; j++) {
+    //             auto c = std::make_shared<ChunkObject>(atlas);
+    //             c->SetPos(Vec3{(float)16*i, (float)0, (float)16*j});
+    //             for (int x = 0; x < 16; x++) {
+    //                 for (int z = 0; z < 16; z++) {
+    //                     c->PutBlock(x, z, 0, CraftBlock::Grass);
+    //                     c->PutBlock(x, z, -64, CraftBlock::Grass);
+    //                 }
+    //             }
+    //             chunkList.push_back(c);
+    //     }
+    // }
 
 
     rs.mvpLocation = rs.currentShader->GetUniformLocation("MVP");
@@ -239,10 +238,11 @@ int main(void) {
     rs.lastMouse.y = height / 2;
     rs.projection = OrthoProjection(-ratio, ratio, -1.f, 1.f, 1.f, 100.f);
     rs.projection = PerspectiveProjection((80*M_PI)/180, ratio,  0.1f, 100.f);
-
+    auto renderStart = std::chrono::system_clock::now();
     auto lastFrame = std::chrono::system_clock::now();
     auto ss = std::stringstream();
     while (!glfwWindowShouldClose(window)) {
+        auto seconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - renderStart).count();
         auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastFrame);
         if (delta.count() != 0) {
             auto fps = 1000 / delta.count();
@@ -264,8 +264,15 @@ int main(void) {
 
         rs.currentShader->Use();
         // chunk.faceCulling = true;
+        // if ((seconds % 300) > 150) {
+        //     chunk.PutBlock(11, 11, 1, CraftBlock::Water);
+        // } else {
+        //     chunk.PutBlock(11, 11, 1, CraftBlock::Lava);
+        // }
         chunk.Update();
         chunk.Render(rs);
+
+
         for (auto &c: chunkList) {
             c->wireframeMode = rs.wireframeMode;
             c->Update();

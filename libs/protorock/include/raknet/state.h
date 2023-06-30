@@ -48,7 +48,7 @@ struct state {
     datagramQueue dataQueue;
     recoveryQueue recQueue;
     packetQueue packQueue;
-    SafeQueue<ByteBuffer> receivedPackets;
+    SafeQueue<SharedByteBuffer> receivedPackets;
     std::vector<uint24_t> datagramsReceived;
     std::atomic<uint32_t> missingDatagramTimes = 0;
 
@@ -104,7 +104,7 @@ struct state {
    public:
     void process(const ByteBuffer &);
     int Write(const ByteBuffer &);
-    ByteBuffer Read();
+    SharedByteBuffer Read();
     void Disconnect();
     bool IsConnected() { return connected; }
     bool IsInvalid() { return isInvalid; }

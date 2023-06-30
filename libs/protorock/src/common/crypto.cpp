@@ -3,6 +3,10 @@
 #include <openssl/ecdsa.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
+#include <openssl/crypto.h>
+#include <openssl/ec.h>
+#include <openssl/evp.h>
+#include <openssl/aes.h>
 
 #include <mutex>
 
@@ -71,7 +75,7 @@ ByteBuffer sha256(const ByteBuffer &data) {
 KeyPair ProtoRock::Crypto::generateP256KeyPair() {
     std::lock_guard<std::mutex> lock(sslMtx);
 
-    EC_KEY *ec_key = EC_KEY_new_by_curve_name(NID_secp256k1);
+    EC_KEY *ec_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
 
     if (!EC_KEY_generate_key(ec_key)) {
         EC_KEY_free(ec_key);
@@ -233,42 +237,102 @@ std::string KeyPair::PrivateToPEM() const {
     return std::string(b.begin(), b.end());
 }
 
+ByteBuffer KeyPair::DHComputeKey(const KeyPair &peer) {
+    ByteBuffer b;
+    auto field_size = EC_GROUP_get_degree(EC_KEY_get0_group(ecKey));
+	b.resize((field_size+7)/8);
+
+    auto generatedLength = ECDH_compute_key(b.data(), b.size(), EC_KEY_get0_public_key(peer.ecKey), ecKey, nullptr);
+
+    if (generatedLength <= 0) {
+        throw Exception("could not generate DH Key");
+    }
+
+    return b;
+}
+
 Minecrypt::Minecrypt(const Common::ByteBuffer &keyBytes) {
+    // Ok so this is funny. I spent a lot of time trying to figure out what's minecraft doing.
+    // And basically it does GCM but without verification tag, which is basically CTR.
+    // Although its CTR, GCM actually initializes the last 4 bytes with a number 2 in bigendian
+    // So that's what I do here
+
     this->keyBytes = keyBytes;
-    ByteBuffer iv;
-    iv.reserve(16);
-    iv.insert(iv.end(), keyBytes.begin(), keyBytes.begin() + 12);
-    iv.push_back(0);
-    iv.push_back(0);
-    iv.push_back(0);
-    iv.push_back(2);
-    AES_init_ctx_iv(&ctx, keyBytes.data(), iv.data());
     sendCounter = 0;
     counterBuff.resize(8);
     hashBuff.resize(32);
+    ivBytes.resize(16);
+    memset(ivBytes.data(), 0, 16);
+    memcpy(ivBytes.data(), keyBytes.data(), 16);
+    ivBytes[12] = 0;
+    ivBytes[13] = 0;
+    ivBytes[14] = 0;
+    ivBytes[15] = 2;
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX_init(ctx);
+    EVP_EncryptInit(ctx, EVP_aes_256_ctr(), keyBytes.data(), ivBytes.data());
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
 }
+
 void Minecrypt::Encrypt(Common::ByteBuffer &buffer) {
     // Counter as Little Endian
-    counterBuff[0] = ((uint8_t) (sendCounter >> 0 & 0xFF));
-    counterBuff[1] = ((uint8_t) (sendCounter >> 8 & 0xFF));
-    counterBuff[2] = ((uint8_t) (sendCounter >> 16 & 0xFF));
-    counterBuff[3] = ((uint8_t) (sendCounter >> 24 & 0xFF));
-    counterBuff[4] = ((uint8_t) (sendCounter >> 32 & 0xFF));
-    counterBuff[5] = ((uint8_t) (sendCounter >> 40 & 0xFF));
-    counterBuff[6] = ((uint8_t) (sendCounter >> 48 & 0xFF));
-    counterBuff[7] = ((uint8_t) (sendCounter >> 56 & 0xFF));
+    counterBuff[0] = (uint8_t)(sendCounter >> 0);
+    counterBuff[1] = (uint8_t)(sendCounter >> 8);
+    counterBuff[2] = (uint8_t)(sendCounter >> 16);
+    counterBuff[3] = (uint8_t)(sendCounter >> 24);
+    counterBuff[4] = (uint8_t)(sendCounter >> 32);
+    counterBuff[5] = (uint8_t)(sendCounter >> 40);
+    counterBuff[6] = (uint8_t)(sendCounter >> 48);
+    counterBuff[7] = (uint8_t)(sendCounter >> 56);
+    sendCounter++;
 
     SHA256_CTX hasher;
     SHA256_Init(&hasher);
-    SHA256_Update(&hasher,  counterBuff.data(), 8);
-    SHA256_Update(&hasher, buffer.data() + 1, buffer.size()-1);
+    SHA256_Update(&hasher, counterBuff.data(), 8);
+    SHA256_Update(&hasher, buffer.data(), buffer.size());
+    SHA256_Update(&hasher, keyBytes.data(), keyBytes.size());
+    SHA256_Final(hashBuff.data(), &hasher);
+    buffer.insert(buffer.end(), hashBuff.begin(), hashBuff.begin()+8);
+    Minecrypt::XORBuffer(buffer);
+}
+
+void Minecrypt::XORBuffer(Common::ByteBuffer &data) {
+    int l = data.size();
+    EVP_EncryptUpdate(ctx, data.data(), &l, data.data(), data.size());
+}
+
+Minecrypt::~Minecrypt() {
+    EVP_CIPHER_CTX_free(ctx);
+}
+
+void Minecrypt::Decrypt(Common::ByteBuffer &buffer) {
+    Minecrypt::XORBuffer(buffer);
+}
+
+void Minecrypt::Verify(const Common::ByteBuffer &buffer) {
+    if (buffer.size() < 8) {
+        throw Exception("expected buffer to be at least 8 bytes long");
+    }
+
+    counterBuff[0] = (uint8_t)(sendCounter >> 0);
+    counterBuff[1] = (uint8_t)(sendCounter >> 8);
+    counterBuff[2] = (uint8_t)(sendCounter >> 16);
+    counterBuff[3] = (uint8_t)(sendCounter >> 24);
+    counterBuff[4] = (uint8_t)(sendCounter >> 32);
+    counterBuff[5] = (uint8_t)(sendCounter >> 40);
+    counterBuff[6] = (uint8_t)(sendCounter >> 48);
+    counterBuff[7] = (uint8_t)(sendCounter >> 56);
+    sendCounter++;
+
+    SHA256_CTX hasher;
+    SHA256_Init(&hasher);
+    SHA256_Update(&hasher, counterBuff.data(), 8);
+    SHA256_Update(&hasher, buffer.data(), buffer.size() - 8);  // minus hash
     SHA256_Update(&hasher, keyBytes.data(), keyBytes.size());
     SHA256_Final(hashBuff.data(), &hasher);
 
-    buffer.insert(buffer.end(), hashBuff.begin(), hashBuff.end());
-
-    AES_CTR_xcrypt_buffer(&ctx, buffer.data()+1, buffer.size()-1);
-}
-void Minecrypt::Decrypt(Common::ByteBuffer &buffer) {
-    AES_CTR_xcrypt_buffer(&ctx, buffer.data(), buffer.size());
+    // Compare hashes
+    if (memcmp(buffer.data() + buffer.size() - 8, hashBuff.data(), 8) != 0) {
+        throw Exception(fmt::format("checksum does not match."));
+    };
 }
